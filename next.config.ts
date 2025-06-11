@@ -1,14 +1,9 @@
-
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  // typescript: {
-  //   ignoreBuildErrors: true, // Removed to enable TS error checking
-  // },
-  // eslint: {
-  //   ignoreDuringBuilds: true, // Removed to enable ESLint error checking
-  // },
+const nextConfig = {
+  experimental: {
+    turbo: {
+      enabled: false, // ✅ This is the correct format in Next.js 15+
+    },
+  },
   images: {
     remotePatterns: [
       {
