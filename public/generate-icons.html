@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LeadFlow Icon Generator</title>
+</head>
+<body>
+    <h2>LeadFlow App Icons</h2>
+    <canvas id="canvas" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <br><br>
+    <div id="links"></div>
+    <script>
+        // Helper function to draw gear icon
+        function drawGear(ctx, centerX, centerY, outerRadius, innerRadius, teeth) {
+            const angleStep = (Math.PI * 2) / teeth;
+            const toothHeight = outerRadius * 0.2;
+            
+            ctx.beginPath();
+            
+            for (let i = 0; i < teeth; i++) {
+                const angle = i * angleStep;
+                const nextAngle = (i + 1) * angleStep;
+                
+                // Outer tooth
+                const x1 = centerX + Math.cos(angle) * outerRadius;
+                const y1 = centerY + Math.sin(angle) * outerRadius;
+                const x2 = centerX + Math.cos(angle + angleStep * 0.3) * (outerRadius + toothHeight);
+                const y2 = centerY + Math.sin(angle + angleStep * 0.3) * (outerRadius + toothHeight);
+                const x3 = centerX + Math.cos(angle + angleStep * 0.7) * (outerRadius + toothHeight);
+                const y3 = centerY + Math.sin(angle + angleStep * 0.7) * (outerRadius + toothHeight);
+                const x4 = centerX + Math.cos(nextAngle) * outerRadius;
+                const y4 = centerY + Math.sin(nextAngle) * outerRadius;
+                
+                if (i === 0) ctx.moveTo(x1, y1);
+                else ctx.lineTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.lineTo(x3, y3);
+                ctx.lineTo(x4, y4);
+            }
+            
+            ctx.closePath();
+            
+            // Create gradient
+            const gradient = ctx.createLinearGradient(centerX - outerRadius, centerY - outerRadius, 
+                                                   centerX + outerRadius, centerY + outerRadius);
+            gradient.addColorStop(0, '#60a5fa');
+            gradient.addColorStop(0.5, '#3b82f6');
+            gradient.addColorStop(1, '#1d4ed8');
+            
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Inner circle (hole)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+        }
+        
+        // Create 192x192 icon
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // White background with subtle gradient
+        const bgGradient = ctx.createLinearGradient(0, 0, 192, 192);
+        bgGradient.addColorStop(0, '#ffffff');
+        bgGradient.addColorStop(1, '#f8fafc');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, 192, 192);
+        
+        // Draw gear
+        drawGear(ctx, 96, 70, 35, 15, 8);
+        
+        // Text
+        ctx.fillStyle = '#1e293b';
+        ctx.font = 'bold 28px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Leadflow', 96, 140);
+        
+        // Create 512x512 icon
+        const canvas512 = document.getElementById('canvas512');
+        const ctx512 = canvas512.getContext('2d');
+        
+        // White background with subtle gradient
+        const bgGradient512 = ctx512.createLinearGradient(0, 0, 512, 512);
+        bgGradient512.addColorStop(0, '#ffffff');
+        bgGradient512.addColorStop(1, '#f8fafc');
+        ctx512.fillStyle = bgGradient512;
+        ctx512.fillRect(0, 0, 512, 512);
+        
+        // Draw larger gear
+        drawGear(ctx512, 256, 190, 95, 40, 8);
+        
+        // Text
+        ctx512.fillStyle = '#1e293b';
+        ctx512.font = 'bold 76px Arial, sans-serif';
+        ctx512.textAlign = 'center';
+        ctx512.fillText('Leadflow', 256, 360);
+        
+        // Create download links
+        const linksDiv = document.getElementById('links');
+        
+        const link192 = document.createElement('a');
+        link192.download = 'icon-192x192.png';
+        link192.href = canvas.toDataURL('image/png');
+        link192.textContent = 'Download 192x192 icon';
+        link192.style.display = 'block';
+        link192.style.margin = '10px 0';
+        link192.style.padding = '10px 20px';
+        link192.style.backgroundColor = '#3b82f6';
+        link192.style.color = 'white';
+        link192.style.textDecoration = 'none';
+        link192.style.borderRadius = '5px';
+        linksDiv.appendChild(link192);
+        
+        const link512 = document.createElement('a');
+        link512.download = 'icon-512x512.png';
+        link512.href = canvas512.toDataURL('image/png');
+        link512.textContent = 'Download 512x512 icon';
+        link512.style.display = 'block';
+        link512.style.margin = '10px 0';
+        link512.style.padding = '10px 20px';
+        link512.style.backgroundColor = '#3b82f6';
+        link512.style.color = 'white';
+        link512.style.textDecoration = 'none';
+        link512.style.borderRadius = '5px';
+        linksDiv.appendChild(link512);
+        
+        // Auto-download functionality
+        const autoDownload = () => {
+            setTimeout(() => {
+                link192.click();
+                setTimeout(() => {
+                    link512.click();
+                }, 500);
+            }, 1000);
+        };
+        
+        const autoBtn = document.createElement('button');
+        autoBtn.textContent = 'Auto Download Both Icons';
+        autoBtn.style.display = 'block';
+        autoBtn.style.margin = '20px 0';
+        autoBtn.style.padding = '15px 30px';
+        autoBtn.style.backgroundColor = '#059669';
+        autoBtn.style.color = 'white';
+        autoBtn.style.border = 'none';
+        autoBtn.style.borderRadius = '5px';
+        autoBtn.style.fontSize = '16px';
+        autoBtn.style.cursor = 'pointer';
+        autoBtn.onclick = autoDownload;
+        linksDiv.appendChild(autoBtn);
+    </script>
+</body>
+</html>
