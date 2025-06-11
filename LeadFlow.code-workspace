@@ -1,0 +1,68 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "node_modules": true,
+      ".next": true,
+      ".genkit": true,
+      "coverage": true,
+      "test-results": true,
+      "playwright-report": true,
+      ".cache": true,
+      ".temp": true,
+      ".tmp": true,
+      "*.log": true,
+      "*.tsbuildinfo": true,
+      ".vercel": true,
+      ".firebase": true,
+      "**/*.map": true,
+      "**/*.min.js": true,
+      "**/*.bundle.js": true
+    },
+    "search.exclude": {
+      "node_modules": true,
+      ".next": true,
+      ".genkit": true,
+      "coverage": true,
+      "test-results": true,
+      "playwright-report": true,
+      ".cache": true,
+      ".temp": true,
+      ".tmp": true,
+      "*.log": true,
+      "*.tsbuildinfo": true,
+      ".vercel": true,
+      ".firebase": true,
+      "**/*.map": true,
+      "**/*.min.js": true,
+      "**/*.bundle.js": true,
+      "docs": true,
+      "*.md": true
+    },
+    "typescript.preferences.excludePackageJsonAutoImports": "on",
+    "typescript.suggest.autoImports": false,
+    "typescript.preferences.includePackageJsonAutoImports": "off",
+    "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/**": true,
+      "**/.next/**": true,
+      "**/coverage/**": true,
+      "**/test-results/**": true,
+      "**/playwright-report/**": true,
+      "**/.cache/**": true,
+      "**/.temp/**": true,
+      "**/.tmp/**": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-typescript-next"
+    ]
+  }
+}

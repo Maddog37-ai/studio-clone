@@ -1,0 +1,99 @@
+# Copilot ignore file for performance optimization
+
+# Dependencies and build artifacts
+node_modules/
+.next/
+.genkit/
+out/
+build/
+dist/
+coverage/
+test-results/
+playwright-report/
+
+# Cache and temp files
+.cache/
+.temp/
+.tmp/
+*.log
+*.tsbuildinfo
+
+# Environment and config
+.env*
+.vercel/
+.firebase/
+
+# Large generated files
+*.map
+*.min.js
+*.bundle.js
+
+# Documentation and markdown (unless needed)
+docs/
+*.md
+README*
+CHANGELOG*
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+e2e/
+__tests__/
+
+# Backup and temporary files
+*.bak
+*.backup
+*.tmp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Large data files
+*.csv
+*.json.bak
+*.sql
+*.db
+*.sqlite
+
+# Asset files that don't need code analysis
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Storybook and build artifacts
+storybook-static/
+.storybook/
+*.stories.*
+
+# Large configuration files
+tsconfig.tsbuildinfo
+*.lock
+yarn.lock
+package-lock.json
+
+# Backup and duplicate files
+*-backup.*
+*-fixed.*
+*-old.*
+*-copy.*
+*.bak.js
+*.bak.ts
+*.bak.tsx
