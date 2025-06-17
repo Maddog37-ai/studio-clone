@@ -91,7 +91,7 @@ function MessageItem({ message, isOwn, onEdit, onDelete, onReply }: MessageItemP
       if (message.timestamp && typeof message.timestamp === 'object' && 'toDate' in message.timestamp) {
         date = (message.timestamp as { toDate(): Date }).toDate();
       } else {
-        date = new Date(message.timestamp as string | number | Date);
+        date = new Date(message.timestamp as unknown as string | number | Date);
       }
       
       return formatDistanceToNow(date, { addSuffix: true });

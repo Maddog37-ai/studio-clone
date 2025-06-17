@@ -49,31 +49,31 @@ export function TeamMetricsSummary({ teamMetrics, loading }: TeamMetricsSummaryP
     },
     {
       title: "Overall Sit Rate",
-      value: `${teamMetrics.overallSitRate.toFixed(1)}%`,
+      value: `${teamMetrics.avgSitRate.toFixed(1)}%`,
       icon: Calendar,
       color: "text-emerald-600"
     },
     {
       title: "Overall Close Rate",
-      value: `${teamMetrics.overallCloseRate.toFixed(1)}%`,
+      value: `${teamMetrics.avgCloseRate.toFixed(1)}%`,
       icon: Target,
       color: "text-blue-600"
     },
     {
-      title: "Revenue Generated",
-      value: `$${teamMetrics.totalRevenue.toLocaleString()}`,
-      icon: TrendingUp,
-      color: "text-green-600"
+      title: "Canceled Lead Rate",
+      value: `${teamMetrics.canceledLeadRate.toFixed(1)}%`,
+      icon: Activity,
+      color: "text-red-600"
     },
     {
-      title: "Avg Revenue/Lead",
-      value: `$${teamMetrics.avgRevenuePerLead.toFixed(0)}`,
-      icon: Activity,
+      title: "Sameday Sits That Close %",
+      value: `${teamMetrics.samedaySitCloseRate.toFixed(1)}%`,
+      icon: TrendingUp,
       color: "text-orange-600"
     },
     {
-      title: "Conversion Rate",
-      value: `${teamMetrics.conversionRate.toFixed(1)}%`,
+      title: "Scheduled Appointments That Close %",
+      value: `${teamMetrics.scheduledAppointmentCloseRate.toFixed(1)}%`,
       icon: Target,
       color: "text-purple-600"
     }

@@ -314,11 +314,6 @@ export default function LeadCard({lead, context = "in-process", onLeadClick}: Le
             </Button>
           </CardFooter>
         )}
-        
-        {/* DEBUG: Show user role and conditions */}
-        <div className="px-4 pb-2 text-xs text-gray-500">
-          DEBUG - Role: {user?.role}, Context: {context}, CanUpdate: {canUpdateDisposition ? 'Yes' : 'No'}
-        </div>
       </Card>
       {canUpdateDisposition && (
         <LeadDispositionModal

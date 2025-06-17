@@ -26,6 +26,7 @@ const functions = getFunctions(app);
 export const acceptJobFunction = httpsCallable(functions, 'acceptJob');
 export const leadflowBotFunction = httpsCallable(functions, 'leadflowBot');
 export const inviteUserFunction = httpsCallable(functions, 'inviteUser');
+export const updateAdminRolesFunction = httpsCallable(functions, 'updateAdminRoles');
 export const getTeamStatsFunction = httpsCallable(functions, 'getTeamStats');
 export const getDetailedAnalyticsFunction = httpsCallable(functions, 'getDetailedAnalytics');
 export const generateAnalyticsReportFunction = httpsCallable(functions, 'generateAnalyticsReport');

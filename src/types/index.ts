@@ -90,9 +90,9 @@ export interface ChatMessage {
 }
 
 export interface ChatChannel {
-  id: string; // teamId or "empire-region"
-  name: string; // team name or "Empire Region"
-  type: "team" | "region";
+  id: string; // teamId, "empire-region", or "ra-bot"
+  name: string; // team name, "Empire Region", or "Ask Ra"
+  type: "team" | "region" | "bot";
   teamId?: string; // for team chats
   lastMessageId?: string;
   lastMessageContent?: string;

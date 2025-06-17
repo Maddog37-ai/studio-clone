@@ -38,6 +38,9 @@ export interface TeamMetrics {
   totalRevenue: number;
   avgRevenuePerLead: number;
   conversionRate: number;
+  canceledLeadRate: number;
+  samedaySitCloseRate: number;
+  scheduledAppointmentCloseRate: number;
   leadsToday: number;
   leadsThisWeek: number;
   leadsThisMonth: number;

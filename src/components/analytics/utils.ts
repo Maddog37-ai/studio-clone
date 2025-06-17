@@ -4,10 +4,12 @@ import { SetterPerformance, CloserPerformance, TeamMetrics, TrendData } from "./
 
 export const calculateSetterPerformance = (leads: Lead[]): SetterPerformance[] => {
   try {
+    // Ensure leads is an array and not null/undefined
+    const safeLeads = Array.isArray(leads) ? leads : [];
     const setterMap = new Map<string, SetterPerformance>();
 
-    leads.forEach(lead => {
-      if (!lead.setterId || !lead.setterName) return;
+    safeLeads.forEach(lead => {
+      if (!lead || !lead.setterId || !lead.setterName) return;
 
       const existing = setterMap.get(lead.setterId) || {
         uid: lead.setterId,
@@ -70,11 +72,13 @@ export const calculateSetterPerformance = (leads: Lead[]): SetterPerformance[] =
 
 export const calculateCloserPerformance = (leads: Lead[]): CloserPerformance[] => {
   try {
+    // Ensure leads is an array and not null/undefined
+    const safeLeads = Array.isArray(leads) ? leads : [];
     const closerMap = new Map<string, CloserPerformance>();
 
-    leads.forEach(lead => {
+    safeLeads.forEach(lead => {
       // Use assignedCloserId and assignedCloserName from the actual Lead type
-      if (!lead.assignedCloserId || !lead.assignedCloserName) return;
+      if (!lead || !lead.assignedCloserId || !lead.assignedCloserName) return;
 
       const existing = closerMap.get(lead.assignedCloserId) || {
         uid: lead.assignedCloserId,
@@ -126,24 +130,60 @@ export const calculateTeamMetrics = (
   closerPerformance: CloserPerformance[]
 ): TeamMetrics => {
   try {
-    const totalSits = leads.filter(lead => ['sold', 'no_sale', 'credit_fail'].includes(lead.status)).length;
-    const totalSold = leads.filter(lead => lead.status === 'sold').length;
+    // Ensure leads is an array and not null/undefined
+    const safeLeads = Array.isArray(leads) ? leads : [];
+    const safeSetterPerformance = Array.isArray(setterPerformance) ? setterPerformance : [];
+    const safeCloserPerformance = Array.isArray(closerPerformance) ? closerPerformance : [];
+    
+    const totalSits = safeLeads.filter(lead => 
+      lead && lead.status && ['sold', 'no_sale', 'credit_fail'].includes(lead.status)
+    ).length;
+    const totalSold = safeLeads.filter(lead => 
+      lead && lead.status === 'sold'
+    ).length;
+    
+    // Calculate canceled lead rate
+    const canceledLeads = safeLeads.filter(lead => 
+      lead && lead.status === 'canceled'
+    ).length;
+    const canceledLeadRate = safeLeads.length > 0 ? (canceledLeads / safeLeads.length) * 100 : 0;
+    
+    // Calculate same-day sits that close (immediate dispatch that resulted in sale)
+    const samedaySits = safeLeads.filter(lead => 
+      lead && lead.dispatchType === 'immediate' && ['sold', 'no_sale', 'credit_fail'].includes(lead.status)
+    );
+    const samedaySold = safeLeads.filter(lead => 
+      lead && lead.dispatchType === 'immediate' && lead.status === 'sold'
+    ).length;
+    const samedaySitCloseRate = samedaySits.length > 0 ? (samedaySold / samedaySits.length) * 100 : 0;
+    
+    // Calculate scheduled appointments that close
+    const scheduledAppointments = safeLeads.filter(lead => 
+      lead && lead.dispatchType === 'scheduled' && ['sold', 'no_sale', 'credit_fail'].includes(lead.status)
+    );
+    const scheduledSold = safeLeads.filter(lead => 
+      lead && lead.dispatchType === 'scheduled' && lead.status === 'sold'
+    ).length;
+    const scheduledAppointmentCloseRate = scheduledAppointments.length > 0 ? (scheduledSold / scheduledAppointments.length) * 100 : 0;
     
     // Note: saleAmount doesn't exist on Lead type, so totalRevenue will be 0
     const totalRevenue = 0; // Would need saleAmount property on Lead
 
     return {
-      totalLeads: leads.length,
-      totalSetters: setterPerformance.length,
-      totalClosers: closerPerformance.length,
-      avgSitRate: leads.length > 0 ? (totalSits / leads.length) * 100 : 0,
+      totalLeads: safeLeads.length,
+      totalSetters: safeSetterPerformance.length,
+      totalClosers: safeCloserPerformance.length,
+      avgSitRate: safeLeads.length > 0 ? (totalSits / safeLeads.length) * 100 : 0,
       avgCloseRate: totalSits > 0 ? (totalSold / totalSits) * 100 : 0,
       totalRevenue,
-      avgRevenuePerLead: leads.length > 0 ? totalRevenue / leads.length : 0,
-      conversionRate: leads.length > 0 ? (totalSold / leads.length) * 100 : 0,
+      avgRevenuePerLead: safeLeads.length > 0 ? totalRevenue / safeLeads.length : 0,
+      conversionRate: safeLeads.length > 0 ? (totalSold / safeLeads.length) * 100 : 0,
+      canceledLeadRate,
+      samedaySitCloseRate,
+      scheduledAppointmentCloseRate,
       leadsToday: 0, // Would need date calculation
       leadsThisWeek: 0, // Would need date calculation  
-      leadsThisMonth: leads.length // Simplified for now
+      leadsThisMonth: safeLeads.length // Simplified for now
     };
   } catch (error) {
     console.error("Error calculating team metrics:", error);
@@ -156,6 +196,9 @@ export const calculateTeamMetrics = (
       totalRevenue: 0,
       avgRevenuePerLead: 0,
       conversionRate: 0,
+      canceledLeadRate: 0,
+      samedaySitCloseRate: 0,
+      scheduledAppointmentCloseRate: 0,
       leadsToday: 0,
       leadsThisWeek: 0,
       leadsThisMonth: 0
@@ -212,7 +255,9 @@ export const exportToCSV = (data: {
       ['Total Leads:', data.teamMetrics.totalLeads],
       ['Avg Sit Rate:', `${data.teamMetrics.avgSitRate.toFixed(1)}%`],
       ['Avg Close Rate:', `${data.teamMetrics.avgCloseRate.toFixed(1)}%`],
-      ['Total Revenue:', `$${data.teamMetrics.totalRevenue.toLocaleString()}`],
+      ['Canceled Lead Rate:', `${data.teamMetrics.canceledLeadRate.toFixed(1)}%`],
+      ['Sameday Sits Close Rate:', `${data.teamMetrics.samedaySitCloseRate.toFixed(1)}%`],
+      ['Scheduled Appointments Close Rate:', `${data.teamMetrics.scheduledAppointmentCloseRate.toFixed(1)}%`],
       [''],
       ['Setter Performance'],
       ['Name', 'Total Leads', 'Sits', 'Sit Rate', 'Avg/Day'],
