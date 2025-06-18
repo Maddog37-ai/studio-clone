@@ -50,6 +50,7 @@ import {
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {useRouter} from "next/navigation";
 import {format} from "date-fns";
+import VerifiedCheckbox from "@/components/dashboard/verified-checkbox";
 
 export default function LeadManagementPage() {
   const {user, loading: authLoading} = useAuth();
@@ -378,6 +379,7 @@ export default function LeadManagementPage() {
                     <TableHead className="w-32">Phone</TableHead>
                     <TableHead className="w-64">Address</TableHead>
                     <TableHead className="w-32">Status</TableHead>
+                    <TableHead className="w-32">Verified</TableHead>
                     <TableHead className="w-32">Type</TableHead>
                     <TableHead className="w-48">Assigned Closer</TableHead>
                     <TableHead className="w-48">Setter</TableHead>
@@ -473,6 +475,15 @@ export default function LeadManagementPage() {
                             {lead.status.replace("_", " ")}
                           </Badge>
                         )}
+                      </TableCell>
+
+                      {/* Verification */}
+                      <TableCell>
+                        <VerifiedCheckbox 
+                          leadId={lead.id} 
+                          disabled={editingLead === lead.id}
+                          className="flex justify-center"
+                        />
                       </TableCell>
 
                       {/* Type */}

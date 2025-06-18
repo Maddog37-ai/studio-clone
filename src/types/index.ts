@@ -49,6 +49,7 @@ export interface Lead {
   setterVerified?: boolean; // Whether setter has verified the scheduled appointment
   verifiedAt?: Timestamp; // When the appointment was verified by setter
   verifiedBy?: string; // UID of the setter who verified the appointment
+  isVerified?: boolean; // General verification status for the lead
 }
 
 export interface Closer {

@@ -341,7 +341,7 @@ export default function TeamUserManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {teams.filter(team => team.id !== "revolution" && team.id !== "takeover-pros").map((team) => (
+                          {teams.filter(team => team.isActive).map((team) => (
                             <DropdownMenuItem
                               key={team.id}
                               onClick={() => handleChangeUserTeam(teamMember, team.id)}

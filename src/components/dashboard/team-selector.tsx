@@ -165,7 +165,6 @@ export default function TeamSelector() {
             <SelectContent className="dark:card-glass dark:border-turquoise/20 dark:glow-turquoise">
               {teams
                 .filter(team => team.isActive)
-                .filter(team => team.id !== "revolution" && team.id !== "takeover-pros")
                 .map((team) => (
                 <SelectItem key={team.id} value={team.id} className="dark:hover:bg-turquoise/10 dark:focus:bg-turquoise/10">
                   <div className="flex items-center gap-2">

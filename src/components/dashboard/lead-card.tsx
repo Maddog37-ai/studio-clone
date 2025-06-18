@@ -25,7 +25,7 @@ import {useAuth} from "@/hooks/use-auth";
 import {useState} from "react";
 import LeadDispositionModal from "./lead-disposition-modal";
 import LeadPhotoGallery from "./lead-photo-gallery";
-import LeadVerificationButton from "./lead-verification-button";
+import VerifiedCheckbox from "./verified-checkbox";
 import {Badge} from "@/components/ui/badge";
 import {formatDistanceToNow, format as formatDate} from "date-fns";
 
@@ -126,12 +126,9 @@ export default function LeadCard({lead, context = "in-process", onLeadClick}: Le
                 </div>
               </div>
               <div className="flex items-center gap-1 sm:gap-2 ml-2 flex-shrink-0">
-                <LeadVerificationButton 
-                  lead={lead} 
-                  onVerificationChange={() => {
-                    // The real-time listener (onSnapshot) will automatically update the UI
-                    // This callback ensures immediate re-rendering if needed
-                  }}
+                <VerifiedCheckbox 
+                  leadId={lead.id}
+                  className="text-xs"
                 />
                 {lead.status !== "rescheduled" && (
                   <Badge variant={getStatusVariant(lead.status)} className="capitalize text-xs flex items-center gap-1 whitespace-nowrap">

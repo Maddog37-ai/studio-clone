@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Team Cleanup Verification</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            query,
+            where
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc3jmFE6dRXBApmWD9Jg2PO86suqGgaZw",
+            authDomain: "leadflow-4lvrr.firebaseapp.com",
+            projectId: "leadflow-4lvrr",
+            storageBucket: "leadflow-4lvrr.appspot.com",
+            messagingSenderId: "13877630896",
+            appId: "1:13877630896:web:ab7d2717024960ec36e875",
+            measurementId: "G-KDEF2C21SH",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function verifyTeamCleanup() {
+            console.log('🔍 Verifying team cleanup results...\n');
+
+            try {
+                const results = {
+                    teams: {},
+                    users: {},
+                    closers: {},
+                    leads: {}
+                };
+
+                // Check teams
+                console.log('📋 Checking teams...');
+                const teamsSnapshot = await getDocs(collection(db, 'teams'));
+                const teams = teamsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    name: doc.data().name,
+                    description: doc.data().description,
+                    isActive: doc.data().isActive
+                }));
+
+                console.log(`Found ${teams.length} teams:`);
+                teams.forEach(team => {
+                    console.log(`   ✅ ${team.name} (${team.id}) - Active: ${team.isActive}`);
+                });
+
+                results.teams = {
+                    total: teams.length,
+                    list: teams
+                };
+
+                // Check users by team
+                console.log('\n👥 Checking users by team...');
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const usersByTeam = {};
+                let totalUsers = 0;
+
+                usersSnapshot.docs.forEach(doc => {
+                    const userData = doc.data();
+                    const teamId = userData.teamId || 'no-team';
+                    if (!usersByTeam[teamId]) {
+                        usersByTeam[teamId] = [];
+                    }
+                    usersByTeam[teamId].push({
+                        uid: doc.id,
+                        email: userData.email,
+                        displayName: userData.displayName,
+                        role: userData.role
+                    });
+                    totalUsers++;
+                });
+
+                console.log(`Total users: ${totalUsers}`);
+                Object.entries(usersByTeam).forEach(([teamId, users]) => {
+                    console.log(`   ${teamId}: ${users.length} users`);
+                    users.forEach(user => {
+                        console.log(`      - ${user.displayName || user.email} (${user.role})`);
+                    });
+                });
+
+                results.users = {
+                    total: totalUsers,
+                    byTeam: usersByTeam
+                };
+
+                // Check closers by team
+                console.log('\n🎯 Checking closers by team...');
+                const closersSnapshot = await getDocs(collection(db, 'closers'));
+                const closersByTeam = {};
+                let totalClosers = 0;
+
+                closersSnapshot.docs.forEach(doc => {
+                    const closerData = doc.data();
+                    const teamId = closerData.teamId || 'no-team';
+                    if (!closersByTeam[teamId]) {
+                        closersByTeam[teamId] = [];
+                    }
+                    closersByTeam[teamId].push({
+                        uid: doc.id,
+                        name: closerData.name,
+                        status: closerData.status,
+                        role: closerData.role
+                    });
+                    totalClosers++;
+                });
+
+                console.log(`Total closers: ${totalClosers}`);
+                Object.entries(closersByTeam).forEach(([teamId, closers]) => {
+                    console.log(`   ${teamId}: ${closers.length} closers`);
+                    closers.forEach(closer => {
+                        console.log(`      - ${closer.name} (${closer.role}, ${closer.status})`);
+                    });
+                });
+
+                results.closers = {
+                    total: totalClosers,
+                    byTeam: closersByTeam
+                };
+
+                // Check leads by team
+                console.log('\n📊 Checking leads by team...');
+                const leadsSnapshot = await getDocs(collection(db, 'leads'));
+                const leadsByTeam = {};
+                let totalLeads = 0;
+
+                leadsSnapshot.docs.forEach(doc => {
+                    const leadData = doc.data();
+                    const teamId = leadData.teamId || 'no-team';
+                    if (!leadsByTeam[teamId]) {
+                        leadsByTeam[teamId] = 0;
+                    }
+                    leadsByTeam[teamId]++;
+                    totalLeads++;
+                });
+
+                console.log(`Total leads: ${totalLeads}`);
+                Object.entries(leadsByTeam).forEach(([teamId, count]) => {
+                    console.log(`   ${teamId}: ${count} leads`);
+                });
+
+                results.leads = {
+                    total: totalLeads,
+                    byTeam: leadsByTeam
+                };
+
+                // Check for orphaned data
+                console.log('\n🔍 Checking for orphaned data...');
+                const expectedTeams = ['empire', 'revolution', 'takeover-pros'];
+                
+                // Check for users on non-existent teams
+                const orphanedUsers = Object.keys(usersByTeam).filter(teamId => 
+                    teamId !== 'no-team' && !expectedTeams.includes(teamId)
+                );
+                
+                const orphanedClosers = Object.keys(closersByTeam).filter(teamId => 
+                    teamId !== 'no-team' && !expectedTeams.includes(teamId)
+                );
+                
+                const orphanedLeads = Object.keys(leadsByTeam).filter(teamId => 
+                    teamId !== 'no-team' && !expectedTeams.includes(teamId)
+                );
+
+                if (orphanedUsers.length > 0) {
+                    console.log(`⚠️ Found users on non-existent teams: ${orphanedUsers.join(', ')}`);
+                }
+                
+                if (orphanedClosers.length > 0) {
+                    console.log(`⚠️ Found closers on non-existent teams: ${orphanedClosers.join(', ')}`);
+                }
+                
+                if (orphanedLeads.length > 0) {
+                    console.log(`⚠️ Found leads on non-existent teams: ${orphanedLeads.join(', ')}`);
+                }
+
+                // Generate summary
+                const empireUsers = usersByTeam['empire'] ? usersByTeam['empire'].length : 0;
+                const empireClosers = closersByTeam['empire'] ? closersByTeam['empire'].length : 0;
+                const empireLeads = leadsByTeam['empire'] || 0;
+
+                console.log('\n📊 VERIFICATION SUMMARY:');
+                console.log(`✅ Teams: ${teams.length} (expected: Empire, Revolution, TakeoverPros)`);
+                console.log(`✅ Users on Empire team: ${empireUsers}/${totalUsers}`);
+                console.log(`✅ Closers on Empire team: ${empireClosers}/${totalClosers}`);
+                console.log(`✅ Leads on Empire team: ${empireLeads}/${totalLeads}`);
+                
+                const isSuccess = teams.length === 3 && 
+                                empireUsers === totalUsers && 
+                                empireClosers === totalClosers && 
+                                empireLeads === totalLeads;
+
+                if (isSuccess) {
+                    console.log('\n🎉 CLEANUP VERIFICATION: SUCCESS!');
+                    console.log('All users, closers, and leads are on the Empire team.');
+                    console.log('Only the expected teams remain.');
+                } else {
+                    console.log('\n⚠️ CLEANUP VERIFICATION: ISSUES FOUND!');
+                    console.log('Some data may not have been moved correctly.');
+                }
+
+                // Update page content
+                document.getElementById('results').innerHTML = `
+                    <div style="background: ${isSuccess ? '#d4edda' : '#f8d7da'}; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                        <h3>${isSuccess ? '🎉 CLEANUP VERIFICATION: SUCCESS!' : '⚠️ CLEANUP VERIFICATION: ISSUES FOUND!'}</h3>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0;">
+                        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+                            <h4>📋 Teams (${teams.length})</h4>
+                            ${teams.map(team => `<div>✅ ${team.name} (${team.id})</div>`).join('')}
+                        </div>
+                        
+                        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+                            <h4>👥 Users by Team</h4>
+                            ${Object.entries(usersByTeam).map(([teamId, users]) => 
+                                `<div><strong>${teamId}:</strong> ${users.length} users</div>`
+                            ).join('')}
+                        </div>
+                        
+                        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+                            <h4>🎯 Closers by Team</h4>
+                            ${Object.entries(closersByTeam).map(([teamId, closers]) => 
+                                `<div><strong>${teamId}:</strong> ${closers.length} closers</div>`
+                            ).join('')}
+                        </div>
+                        
+                        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+                            <h4>📊 Leads by Team</h4>
+                            ${Object.entries(leadsByTeam).map(([teamId, count]) => 
+                                `<div><strong>${teamId}:</strong> ${count} leads</div>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <h4>📊 Summary</h4>
+                        <ul>
+                            <li>Teams: ${teams.length} (Empire, Revolution, TakeoverPros)</li>
+                            <li>Users on Empire: ${empireUsers}/${totalUsers}</li>
+                            <li>Closers on Empire: ${empireClosers}/${totalClosers}</li>
+                            <li>Leads on Empire: ${empireLeads}/${totalLeads}</li>
+                        </ul>
+                    </div>
+                `;
+
+                return results;
+
+            } catch (error) {
+                console.error('❌ Verification failed:', error);
+                document.getElementById('results').innerHTML = `<div style="color: red;">❌ Verification failed: ${error.message}</div>`;
+                throw error;
+            }
+        }
+
+        // Auto-run when page loads
+        window.addEventListener('load', () => {
+            document.getElementById('results').innerHTML = '<div>🔍 Running verification...</div>';
+            verifyTeamCleanup();
+        });
+    </script>
+</head>
+<body>
+    <h1>Team Cleanup Verification</h1>
+    <p>This script verifies that the team cleanup was successful:</p>
+    <ul>
+        <li>All users are on the Empire team</li>
+        <li>All closers are on the Empire team</li>
+        <li>All leads are on the Empire team</li>
+        <li>Only Empire, Revolution, and TakeoverPros teams remain</li>
+    </ul>
+    
+    <div id="results" style="margin-top: 20px;">
+        Loading verification...
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <p><strong>Check the browser console for detailed logs.</strong></p>
+    </div>
+</body>
+</html>

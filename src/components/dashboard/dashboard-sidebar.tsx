@@ -11,11 +11,15 @@ import {
   ClipboardList, 
   PlusCircle, 
   User,
-  Home
+  Home,
+  BarChart3,
+  Settings,
+  Users
 } from "lucide-react";
 import AvailabilityToggle from "./availability-toggle";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
 import { useState } from "react";
+import React from "react";
 import dynamic from "next/dynamic";
 import TeamChatButton from "./floating-team-chat-button";
 import {
@@ -41,11 +45,51 @@ function DashboardSidebarContent() {
   const { user, logout } = useAuth();
   const [isCreateLeadModalOpen, setIsCreateLeadModalOpen] = useState(false);
 
+  // Debug logging for user role
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('🔍 Sidebar Debug - User data:', user);
+      console.log('🎭 Current role:', user?.role);
+      console.log('👤 User UID:', user?.uid);
+      console.log('📧 User email:', user?.email);
+      console.log('🏢 Team ID:', user?.teamId);
+      
+      // Log role-based conditions
+      const isManager = user?.role === "manager";
+      const isAdmin = user?.role === "admin";
+      const isManagerOrAdmin = isManager || isAdmin;
+      
+      console.log('🔐 Role checks:', {
+        isManager,
+        isAdmin,
+        isManagerOrAdmin,
+        shouldShowManagerTools: isManagerOrAdmin
+      });
+    }
+  }, [user]);
+
   const getAvatarFallbackText = () => {
     if (user?.displayName) return user.displayName.substring(0, 2).toUpperCase();
     if (user?.email) return user.email.substring(0, 2).toUpperCase();
     return <UserCircle size={24} />;
   };
+
+  // Explicitly check user roles
+  const isManager = user?.role === "manager";
+  const isAdmin = user?.role === "admin";
+  const isManagerOrAdmin = isManager || isAdmin;
+  const isAdminOnly = user?.role === "admin";
+
+  // Debug log role state
+  React.useEffect(() => {
+    console.log('🔐 Sidebar role state:', {
+      userRole: user?.role,
+      isManager,
+      isAdmin,
+      isManagerOrAdmin,
+      isAdminOnly
+    });
+  }, [user?.role, isManager, isAdmin, isManagerOrAdmin, isAdminOnly]);
 
   return (
     <>
@@ -76,7 +120,7 @@ function DashboardSidebarContent() {
             </SidebarMenuItem>
 
             {/* Create Lead Button */}
-            {(user?.role === "setter" || user?.role === "manager" || user?.role === "admin") && (
+            {(user?.role === "setter" || isManagerOrAdmin) && (
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => setIsCreateLeadModalOpen(true)}
@@ -89,6 +133,99 @@ function DashboardSidebarContent() {
             )}
 
             <Separator className="my-2" />
+
+            {/* Manager/Admin Tools */}
+            {isManagerOrAdmin && (
+              <>
+                {/* For Managers: Show manager tools directly */}
+                {isManager && !isAdmin && (
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link href="/dashboard/lead-management" className="flex items-center space-x-3">
+                          <ClipboardList className="h-5 w-5" />
+                          <span>Lead Management</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link href="/dashboard/analytics" className="flex items-center space-x-3">
+                          <BarChart3 className="h-5 w-5" />
+                          <span>Performance Analytics</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
+                )}
+
+                {/* For Admins: Show both Manager Tools and Admin Tools sections */}
+                {isAdminOnly && (
+                  <>
+                    {/* Manager Tools Section for Admins */}
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <div className="flex items-center space-x-3 px-2 py-1">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium text-muted-foreground">Manager Tools</span>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link href="/dashboard/lead-management" className="flex items-center space-x-3 ml-4">
+                          <ClipboardList className="h-4 w-4" />
+                          <span>Lead Management</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link href="/dashboard/manage-teams" className="flex items-center space-x-3 ml-4">
+                          <Users className="h-4 w-4" />
+                          <span>Manage Teams</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link href="/dashboard/analytics" className="flex items-center space-x-3 ml-4">
+                          <BarChart3 className="h-4 w-4" />
+                          <span>Performance Analytics</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <div className="my-2" />
+
+                    {/* Admin Tools Section */}
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <div className="flex items-center space-x-3 px-2 py-1">
+                          <Settings className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium text-muted-foreground">Admin Tools</span>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link href="/dashboard/admin-tools" className="flex items-center space-x-3 ml-4">
+                          <Settings className="h-4 w-4" />
+                          <span>Region & Team Management</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
+                )}
+
+                <Separator className="my-2" />
+              </>
+            )}
 
             {/* Navigation Items */}
             <SidebarMenuItem>

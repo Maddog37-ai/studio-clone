@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import VerifiedCheckbox from "@/components/dashboard/verified-checkbox";
 import {
   Activity,
   CheckCircle2,
@@ -182,7 +183,7 @@ export default function LeadManagementSpreadsheet() {
           id: doc.id,
           ...doc.data()
         } as Team))
-        .filter(team => !["revolution", "takeover-pros"].includes(team.id)); // Exclude unwanted teams
+        .filter(team => team.isActive !== false); // Only exclude explicitly inactive teams
       
       setTeams(teamsData);
       setTeamsLoading(false);
@@ -428,6 +429,7 @@ export default function LeadManagementSpreadsheet() {
                   <TableHead className="w-[120px]">Phone</TableHead>
                   <TableHead className="w-[200px]">Address</TableHead>
                   <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[120px]">Verified</TableHead>
                   <TableHead className="w-[100px]">Team</TableHead>
                   <TableHead className="w-[100px]">Type</TableHead>
                   <TableHead className="w-[120px]">Assigned To</TableHead>
@@ -479,6 +481,12 @@ export default function LeadManagementSpreadsheet() {
                           {getStatusIcon(lead.status)}
                           {lead.status.replace("_", " ")}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <VerifiedCheckbox 
+                          leadId={lead.id} 
+                          className="flex justify-center"
+                        />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center">

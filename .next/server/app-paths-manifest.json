@@ -1,6 +1,9 @@
 {
   "/login/page": "app/login/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/all-leads/page": "app/dashboard/all-leads/page.js",
+  "/dashboard/lead-management/page": "app/dashboard/lead-management/page.js",
   "/dashboard/analytics/page": "app/dashboard/analytics/page.js",
-  "/dashboard/profile/page": "app/dashboard/profile/page.js"
+  "/dashboard/profile/page": "app/dashboard/profile/page.js",
+  "/dashboard/admin-tools/page": "app/dashboard/admin-tools/page.js"
 }

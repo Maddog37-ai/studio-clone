@@ -33,7 +33,7 @@ export const testPushNotifications = async () => {
         leadId: 'test-123',
         leadName: 'John Doe',
         message: 'Test notification: New lead "John Doe" has been created!',
-        actionUrl: '/dashboard/all-leads'
+        actionUrl: '/dashboard/lead-management'
       });
       console.log('✅ Local test notification sent');
     }, 2000);
@@ -74,7 +74,7 @@ export const testFirebaseFunctionNotification = async (leadData: any) => {
       data: {
         type: 'lead_assigned',
         leadId: leadData.id || 'test-lead-123',
-        actionUrl: '/dashboard/all-leads'
+        actionUrl: '/dashboard/lead-management'
       }
     };
 

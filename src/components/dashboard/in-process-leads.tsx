@@ -164,9 +164,9 @@ export default function InProcessLeads() {
             return isMatch;
           }
         } else if (user.role === "setter") {
-          // For setters, show leads they created or all leads in active statuses (limited view)
-          const isMatch = lead.assignedCloserId && 
-                 ["waiting_assignment", "accepted", "in_process"].includes(lead.status);
+          // For setters, show ALL "in_process" leads for their team (regardless of assignment)
+          // This ensures setters can see all leads that are actively being worked on by any closer in their team
+          const isMatch = lead.status === "in_process";
           console.log(`Setter filter for lead ${doc.id}:`, { 
             assignedCloserId: lead.assignedCloserId, 
             status: lead.status, 
@@ -254,8 +254,8 @@ export default function InProcessLeads() {
   }, [user?.teamId, allTeamClosers]);
 
   if (user?.role === "setter") {
-    // Allow setters to view in-process leads, but with limited visibility
-    // They can see leads in their team that are in active status
+    // Allow setters to view ALL in-process leads for their team
+    // This gives them visibility into which leads are actively being worked on
   }
 
   const isLoading = loadingLeads || loadingClosers;

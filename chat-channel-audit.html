@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Channel Audit & Connection Setup</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            updateDoc,
+            setDoc,
+            query,
+            where,
+            serverTimestamp 
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc3jmFE6dRXBApmWD9Jg2PO86suqGgaZw",
+            authDomain: "leadflow-4lvrr.firebaseapp.com",
+            projectId: "leadflow-4lvrr",
+            storageBucket: "leadflow-4lvrr.appspot.com",
+            messagingSenderId: "13877630896",
+            appId: "1:13877630896:web:ab7d2717024960ec36e875",
+            measurementId: "G-KDEF2C21SH",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function auditChatChannels() {
+            console.log('🔍 Starting chat channel audit...\n');
+
+            try {
+                // Step 1: Get all regions
+                console.log('📋 Step 1: Getting all regions...');
+                const regionsSnapshot = await getDocs(collection(db, 'regions'));
+                const regions = regionsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`Found ${regions.length} regions:`);
+                regions.forEach(region => {
+                    console.log(`   - ${region.name} (ID: ${region.id}) - ChatChannelId: ${region.chatChannelId || 'NONE'}`);
+                });
+
+                // Step 2: Get all teams
+                console.log('\n📋 Step 2: Getting all teams...');
+                const teamsSnapshot = await getDocs(collection(db, 'teams'));
+                const teams = teamsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`Found ${teams.length} teams:`);
+                teams.forEach(team => {
+                    console.log(`   - ${team.name} (ID: ${team.id}) - Region: ${team.regionId} - ChatChannelId: ${team.chatChannelId || 'NONE'}`);
+                });
+
+                // Step 3: Get all existing chat channels
+                console.log('\n📋 Step 3: Getting all chat channels...');
+                const channelsSnapshot = await getDocs(collection(db, 'chatChannels'));
+                const channels = channelsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`Found ${channels.length} chat channels:`);
+                channels.forEach(channel => {
+                    console.log(`   - ${channel.name} (ID: ${channel.id}) - Type: ${channel.type} - TeamId: ${channel.teamId || 'N/A'}`);
+                });
+
+                // Step 4: Get all users
+                console.log('\n📋 Step 4: Getting all users...');
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const users = usersSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`Found ${users.length} users:`);
+                users.forEach(user => {
+                    console.log(`   - ${user.displayName || user.email} - Team: ${user.teamId} - Role: ${user.role}`);
+                });
+
+                // Step 5: Create proper chat channel structure
+                console.log('\n🔧 Step 5: Setting up proper chat channels...');
+
+                // Create Empire Region chat channel
+                const empireRegionChannelId = 'empire-region';
+                const empireRegionRef = doc(db, 'chatChannels', empireRegionChannelId);
+                await setDoc(empireRegionRef, {
+                    id: empireRegionChannelId,
+                    name: 'Empire Region',
+                    type: 'region',
+                    memberCount: users.length,
+                    isActive: true,
+                    lastMessageTimestamp: serverTimestamp(),
+                    lastMessageContent: '',
+                    lastMessageSender: ''
+                });
+                console.log('✅ Created/Updated Empire Region chat channel');
+
+                // Update Empire region with chat channel ID
+                const empireRegion = regions.find(r => r.name === 'Empire');
+                if (empireRegion) {
+                    await updateDoc(doc(db, 'regions', empireRegion.id), {
+                        chatChannelId: empireRegionChannelId,
+                        updatedAt: serverTimestamp()
+                    });
+                    console.log('✅ Updated Empire region with chat channel ID');
+                }
+
+                // Create team chat channels for each team
+                let teamChannelsCreated = 0;
+                for (const team of teams) {
+                    if (team.isActive) {
+                        const teamChannelId = team.id; // Use team ID as channel ID
+                        const teamChannelRef = doc(db, 'chatChannels', teamChannelId);
+                        
+                        // Count users in this team
+                        const teamUsers = users.filter(u => u.teamId === team.id);
+                        
+                        await setDoc(teamChannelRef, {
+                            id: teamChannelId,
+                            name: `${team.name} Team`,
+                            type: 'team',
+                            teamId: team.id,
+                            memberCount: teamUsers.length,
+                            isActive: true,
+                            lastMessageTimestamp: serverTimestamp(),
+                            lastMessageContent: '',
+                            lastMessageSender: ''
+                        });
+
+                        // Update team with chat channel ID
+                        await updateDoc(doc(db, 'teams', team.id), {
+                            chatChannelId: teamChannelId,
+                            updatedAt: serverTimestamp()
+                        });
+
+                        console.log(`✅ Created team channel: ${team.name} (${teamUsers.length} members)`);
+                        teamChannelsCreated++;
+                    }
+                }
+
+                // Create Ra bot channel
+                const raBotChannelId = 'ra-bot';
+                const raBotRef = doc(db, 'chatChannels', raBotChannelId);
+                await setDoc(raBotRef, {
+                    id: raBotChannelId,
+                    name: 'Ask Ra',
+                    type: 'bot',
+                    memberCount: 0,
+                    isActive: true,
+                    lastMessageTimestamp: serverTimestamp(),
+                    lastMessageContent: '',
+                    lastMessageSender: ''
+                });
+                console.log('✅ Created Ra bot chat channel');
+
+                // Step 6: Final audit
+                console.log('\n🔍 Step 6: Final audit after setup...');
+                const finalChannelsSnapshot = await getDocs(collection(db, 'chatChannels'));
+                const finalChannels = finalChannelsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`\n📊 Final chat channels (${finalChannels.length}):`);
+                finalChannels.forEach(channel => {
+                    console.log(`   ✅ ${channel.name} (${channel.type}) - ${channel.memberCount} members`);
+                });
+
+                // Update page with results
+                document.getElementById('status').innerHTML = `
+                    <div style="color: green; font-weight: bold;">✅ Chat channel audit and setup completed!</div>
+                    <div style="margin: 15px 0;">
+                        <h4>📊 Summary:</h4>
+                        <ul>
+                            <li>Regions: ${regions.length}</li>
+                            <li>Teams: ${teams.length}</li>
+                            <li>Users: ${users.length}</li>
+                            <li>Team channels created/updated: ${teamChannelsCreated}</li>
+                            <li>Region channels: 1 (Empire Region)</li>
+                            <li>Bot channels: 1 (Ask Ra)</li>
+                        </ul>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+                        <h4>📋 Chat Channels Structure:</h4>
+                        ${finalChannels.map(channel => 
+                            `<div>✅ <strong>${channel.name}</strong> (${channel.type}) - ${channel.memberCount} members</div>`
+                        ).join('')}
+                    </div>
+                    <div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin-top: 15px;">
+                        <h4>🔗 Connection Structure:</h4>
+                        <div><strong>Regional Chat:</strong> All users → Empire Region</div>
+                        <div><strong>Team Chats:</strong> Users connected to their team's chat channel</div>
+                        <div><strong>Bot Chat:</strong> All users can access Ask Ra</div>
+                    </div>
+                `;
+
+                console.log('\n🎉 Chat channel audit and setup completed successfully!');
+
+            } catch (error) {
+                console.error('❌ Audit failed:', error);
+                document.getElementById('status').innerHTML = `
+                    <div style="color: red; font-weight: bold;">❌ Audit failed!</div>
+                    <div>Error: ${error.message}</div>
+                `;
+                throw error;
+            }
+        }
+
+        // Auto-run when page loads
+        window.addEventListener('load', () => {
+            document.getElementById('status').innerHTML = '<div>🔍 Starting chat channel audit...</div>';
+            auditChatChannels();
+        });
+    </script>
+</head>
+<body>
+    <h1>Chat Channel Audit & Connection Setup</h1>
+    <p>This script will audit the current chat channel structure and ensure everyone is properly connected to their regional and team chats.</p>
+    
+    <div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #007bff;">
+        <strong>🔗 Chat Structure:</strong>
+        <ul>
+            <li><strong>Empire Region:</strong> All users have access to this regional chat</li>
+            <li><strong>Team Chats:</strong> Each team has its own private chat channel</li>
+            <li><strong>Ask Ra Bot:</strong> AI assistant available to all users</li>
+        </ul>
+    </div>
+    
+    <div id="status" style="margin-top: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 5px;">
+        Loading...
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <p><strong>Check the browser console for detailed logs.</strong></p>
+    </div>
+</body>
+</html>

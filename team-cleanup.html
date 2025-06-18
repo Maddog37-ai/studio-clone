@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Team Cleanup Script</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            updateDoc, 
+            deleteDoc,
+            writeBatch,
+            setDoc,
+            serverTimestamp 
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc3jmFE6dRXBApmWD9Jg2PO86suqGgaZw",
+            authDomain: "leadflow-4lvrr.firebaseapp.com",
+            projectId: "leadflow-4lvrr",
+            storageBucket: "leadflow-4lvrr.appspot.com",
+            messagingSenderId: "13877630896",
+            appId: "1:13877630896:web:ab7d2717024960ec36e875",
+            measurementId: "G-KDEF2C21SH",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Teams to keep
+        const TEAMS_TO_KEEP = ['empire', 'revolution', 'takeover-pros'];
+
+        async function moveAllUsersToEmpire() {
+            console.log('🚀 Starting team cleanup process...\n');
+
+            try {
+                // Step 1: Get all current teams
+                console.log('📋 Step 1: Checking current teams...');
+                const teamsSnapshot = await getDocs(collection(db, 'teams'));
+                const allTeams = teamsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    name: doc.data().name,
+                    description: doc.data().description,
+                    isActive: doc.data().isActive
+                }));
+
+                console.log(`Found ${allTeams.length} teams:`);
+                allTeams.forEach(team => {
+                    const status = TEAMS_TO_KEEP.includes(team.id) ? '✅ KEEP' : '🗑️ DELETE';
+                    console.log(`   ${status} - ${team.name} (${team.id})`);
+                });
+                console.log('');
+
+                // Step 2: Ensure Empire team exists and is properly configured
+                console.log('🏛️ Step 2: Ensuring Empire team exists...');
+                const empireTeamRef = doc(db, 'teams', 'empire');
+                
+                try {
+                    await setDoc(empireTeamRef, {
+                        id: 'empire',
+                        name: 'Empire',
+                        description: 'Elite sales team for enterprise-level opportunities',
+                        isActive: true,
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp(),
+                        settings: {
+                            autoAssignment: true,
+                            maxLeadsPerCloser: 12,
+                            workingHours: {
+                                start: '07:00',
+                                end: '22:00',
+                                timezone: 'America/Los_Angeles'
+                            }
+                        }
+                    }, { merge: true });
+                    console.log('✅ Empire team ensured');
+                } catch (error) {
+                    console.log('❌ Error ensuring Empire team:', error);
+                }
+
+                // Step 3: Ensure Revolution and TakeoverPros teams exist
+                console.log('\n🔄 Step 3: Ensuring Revolution and TakeoverPros teams exist...');
+                
+                try {
+                    const revolutionTeamRef = doc(db, 'teams', 'revolution');
+                    await setDoc(revolutionTeamRef, {
+                        id: 'revolution',
+                        name: 'Revolution (Empire)',
+                        description: 'Revolution team under Empire division',
+                        isActive: true,
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp(),
+                        settings: {
+                            autoAssignment: true,
+                            maxLeadsPerCloser: 12,
+                            workingHours: {
+                                start: '07:00',
+                                end: '22:00',
+                                timezone: 'America/Los_Angeles'
+                            }
+                        }
+                    }, { merge: true });
+                    console.log('✅ Revolution team ensured');
+                } catch (error) {
+                    console.log('❌ Error ensuring Revolution team:', error);
+                }
+
+                try {
+                    const takeoverProTeamRef = doc(db, 'teams', 'takeover-pros');
+                    await setDoc(takeoverProTeamRef, {
+                        id: 'takeover-pros',
+                        name: 'TakeoverPros (Empire)',
+                        description: 'TakeoverPros team under Empire division',
+                        isActive: true,
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp(),
+                        settings: {
+                            autoAssignment: true,
+                            maxLeadsPerCloser: 12,
+                            workingHours: {
+                                start: '07:00',
+                                end: '22:00',
+                                timezone: 'America/Los_Angeles'
+                            }
+                        }
+                    }, { merge: true });
+                    console.log('✅ TakeoverPros team ensured');
+                } catch (error) {
+                    console.log('❌ Error ensuring TakeoverPros team:', error);
+                }
+
+                // Step 4: Move all users to Empire team
+                console.log('\n👥 Step 4: Moving all users to Empire team...');
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const users = usersSnapshot.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`Found ${users.length} users to process`);
+
+                let usersMovedToEmpire = 0;
+                const userPromises = [];
+
+                users.forEach(user => {
+                    if (user.teamId !== 'empire') {
+                        console.log(`👤 Moving user ${user.displayName || user.email || user.uid} to Empire team (was on ${user.teamId || 'no team'})`);
+                        const userRef = doc(db, 'users', user.uid);
+                        userPromises.push(updateDoc(userRef, {
+                            teamId: 'empire',
+                            updatedAt: serverTimestamp()
+                        }));
+                        usersMovedToEmpire++;
+                    }
+                });
+
+                if (userPromises.length > 0) {
+                    await Promise.all(userPromises);
+                    console.log(`✅ Moved ${usersMovedToEmpire} users to Empire team`);
+                } else {
+                    console.log('✅ All users already on Empire team');
+                }
+
+                // Step 5: Move all closers to Empire team
+                console.log('\n🎯 Step 5: Moving all closers to Empire team...');
+                const closersSnapshot = await getDocs(collection(db, 'closers'));
+                const closers = closersSnapshot.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`Found ${closers.length} closers to process`);
+
+                let closersMovedToEmpire = 0;
+                const closerPromises = [];
+
+                closers.forEach(closer => {
+                    if (closer.teamId !== 'empire') {
+                        console.log(`🎯 Moving closer ${closer.name || closer.uid} to Empire team (was on ${closer.teamId || 'no team'})`);
+                        const closerRef = doc(db, 'closers', closer.uid);
+                        closerPromises.push(updateDoc(closerRef, {
+                            teamId: 'empire',
+                            updatedAt: serverTimestamp()
+                        }));
+                        closersMovedToEmpire++;
+                    }
+                });
+
+                if (closerPromises.length > 0) {
+                    await Promise.all(closerPromises);
+                    console.log(`✅ Moved ${closersMovedToEmpire} closers to Empire team`);
+                } else {
+                    console.log('✅ All closers already on Empire team');
+                }
+
+                // Step 6: Move all leads to Empire team
+                console.log('\n📊 Step 6: Moving all leads to Empire team...');
+                const leadsSnapshot = await getDocs(collection(db, 'leads'));
+                const leads = leadsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`Found ${leads.length} leads to process`);
+
+                let leadsMovedToEmpire = 0;
+                const leadPromises = [];
+
+                leads.forEach(lead => {
+                    if (lead.teamId !== 'empire') {
+                        const leadRef = doc(db, 'leads', lead.id);
+                        leadPromises.push(updateDoc(leadRef, {
+                            teamId: 'empire',
+                            updatedAt: serverTimestamp()
+                        }));
+                        leadsMovedToEmpire++;
+                    }
+                });
+
+                if (leadPromises.length > 0) {
+                    // Process in chunks to avoid overwhelming Firestore
+                    const chunkSize = 50;
+                    for (let i = 0; i < leadPromises.length; i += chunkSize) {
+                        const chunk = leadPromises.slice(i, i + chunkSize);
+                        await Promise.all(chunk);
+                        console.log(`📄 Processed ${Math.min(i + chunkSize, leadPromises.length)}/${leadPromises.length} leads...`);
+                    }
+                    console.log(`✅ Moved ${leadsMovedToEmpire} leads to Empire team`);
+                } else {
+                    console.log('✅ All leads already on Empire team');
+                }
+
+                // Step 7: Delete unwanted teams
+                console.log('\n🗑️ Step 7: Deleting unwanted teams...');
+                const teamsToDelete = allTeams.filter(team => !TEAMS_TO_KEEP.includes(team.id));
+                
+                if (teamsToDelete.length === 0) {
+                    console.log('✅ No teams to delete');
+                } else {
+                    console.log(`Deleting ${teamsToDelete.length} unwanted teams:`);
+                    
+                    const deletePromises = teamsToDelete.map(team => {
+                        console.log(`🗑️ Deleting team: ${team.name} (${team.id})`);
+                        const teamRef = doc(db, 'teams', team.id);
+                        return deleteDoc(teamRef);
+                    });
+                    
+                    await Promise.all(deletePromises);
+                    console.log('✅ All unwanted teams deleted');
+                }
+
+                // Step 8: Verify final state
+                console.log('\n🔍 Step 8: Verifying final state...');
+                const finalTeamsSnapshot = await getDocs(collection(db, 'teams'));
+                const remainingTeams = finalTeamsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    name: doc.data().name
+                }));
+
+                console.log('📋 Remaining teams:');
+                remainingTeams.forEach(team => {
+                    console.log(`   ✅ ${team.name} (${team.id})`);
+                });
+
+                // Check user distribution
+                const finalUsersSnapshot = await getDocs(collection(db, 'users'));
+                const usersByTeam = {};
+                finalUsersSnapshot.docs.forEach(doc => {
+                    const teamId = doc.data().teamId || 'no-team';
+                    usersByTeam[teamId] = (usersByTeam[teamId] || 0) + 1;
+                });
+
+                console.log('\n👥 User distribution by team:');
+                Object.entries(usersByTeam).forEach(([teamId, count]) => {
+                    console.log(`   ${teamId}: ${count} users`);
+                });
+
+                console.log('\n🎉 Team cleanup completed successfully!');
+                console.log('📝 Summary:');
+                console.log(`   - ${usersMovedToEmpire} users moved to Empire team`);
+                console.log(`   - ${closersMovedToEmpire} closers moved to Empire team`);
+                console.log(`   - ${leadsMovedToEmpire} leads moved to Empire team`);
+                console.log(`   - ${teamsToDelete.length} unwanted teams deleted`);
+                console.log(`   - ${remainingTeams.length} teams remaining: ${remainingTeams.map(t => t.name).join(', ')}`);
+
+                document.getElementById('status').innerHTML = `
+                    <div style="color: green; font-weight: bold;">✅ Team cleanup completed successfully!</div>
+                    <div>Users moved to Empire: ${usersMovedToEmpire}</div>
+                    <div>Closers moved to Empire: ${closersMovedToEmpire}</div>
+                    <div>Leads moved to Empire: ${leadsMovedToEmpire}</div>
+                    <div>Teams deleted: ${teamsToDelete.length}</div>
+                    <div>Remaining teams: ${remainingTeams.map(t => t.name).join(', ')}</div>
+                `;
+
+            } catch (error) {
+                console.error('❌ Team cleanup failed:', error);
+                document.getElementById('status').innerHTML = `<div style="color: red;">❌ Team cleanup failed: ${error.message}</div>`;
+                throw error;
+            }
+        }
+
+        // Auto-run when page loads
+        window.addEventListener('load', () => {
+            document.getElementById('status').innerHTML = '<div>🚀 Starting team cleanup process...</div>';
+            moveAllUsersToEmpire();
+        });
+    </script>
+</head>
+<body>
+    <h1>Team Cleanup Script</h1>
+    <p>This script will:</p>
+    <ul>
+        <li>Move all users to the Empire team</li>
+        <li>Move all closers to the Empire team</li>
+        <li>Move all leads to the Empire team</li>
+        <li>Remove all teams except Empire, Revolution (Empire), and TakeoverPros (Empire)</li>
+    </ul>
+    
+    <div id="status" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9;">
+        Loading...
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <p><strong>Check the browser console for detailed logs.</strong></p>
+    </div>
+</body>
+</html>

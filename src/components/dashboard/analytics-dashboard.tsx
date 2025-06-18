@@ -642,22 +642,37 @@ export default function AnalyticsDashboard() {
       closingRatio: closer.closingRatio,
     }));
 
-  const dispatchComparisonData = [
-    {
-      type: "Immediate",
-      total: dispatchAnalytics.immediate.total,
-      sold: dispatchAnalytics.immediate.sold,
-      conversionRate: dispatchAnalytics.immediate.conversionRate,
-      fill: chartConfig.immediate.color,
-    },
-    {
-      type: "Scheduled", 
-      total: dispatchAnalytics.scheduled.total,
-      sold: dispatchAnalytics.scheduled.sold,
-      conversionRate: dispatchAnalytics.scheduled.conversionRate,
-      fill: chartConfig.scheduled.color,
-    }
-  ];
+  // Prepare stacked dispatch comparison data showing total volume with dispositions
+  const dispatchComparisonData = (() => {
+    const filteredLeads = filterCloser === "all" 
+      ? analytics.leads 
+      : analytics.leads.filter(lead => lead.assignedCloserId === filterCloser);
+
+    const processDispatchType = (dispatchType: string) => {
+      const leads = filteredLeads.filter(lead => lead.dispatchType === dispatchType);
+      const sold = leads.filter(lead => lead.status === "sold").length;
+      const noSale = leads.filter(lead => lead.status === "no_sale").length;
+      const creditFail = leads.filter(lead => lead.status === "credit_fail").length;
+      const canceled = leads.filter(lead => lead.status === "canceled").length;
+      const other = leads.length - (sold + noSale + creditFail + canceled);
+      
+      return {
+        type: dispatchType.charAt(0).toUpperCase() + dispatchType.slice(1),
+        total: leads.length,
+        sold,
+        noSale,
+        creditFail,
+        canceled,
+        other: Math.max(0, other), // Ensure non-negative
+        conversionRate: leads.length > 0 ? (sold / leads.length) * 100 : 0,
+      };
+    };
+
+    return [
+      processDispatchType("immediate"),
+      processDispatchType("scheduled"),
+    ];
+  })();
 
   const setterQualityData = setterAnalytics
     .sort((a, b) => b.conversionRate - a.conversionRate)
@@ -844,6 +859,16 @@ export default function AnalyticsDashboard() {
                         nameKey="status"
                         innerRadius={60}
                         strokeWidth={5}
+                        label={({ status, count, percent }) => {
+                          // Only show label if slice is larger than 8% to avoid overcrowding
+                          if (percent > 0.08) {
+                            return `${status}: ${(percent * 100).toFixed(0)}%`;
+                          }
+                          return "";
+                        }}
+                        labelLine={false}
+                        fontSize={12}
+                        fontWeight="bold"
                       >
                         {statusData.map((entry, _index) => (
                           <Cell key={`cell-${_index}`} fill={entry.fill} />
@@ -856,12 +881,12 @@ export default function AnalyticsDashboard() {
               </CardContent>
             </Card>
 
-            {/* Dispatch Type Comparison */}
+            {/* Dispatch Type Comparison - Stacked Bar Chart */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
-                  Immediate vs Scheduled Performance
+                  Immediate vs Scheduled Lead Volume & Dispositions
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -876,17 +901,30 @@ export default function AnalyticsDashboard() {
                           const data = payload[0].payload;
                           return (
                             <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                              <p className="font-medium">{label}</p>
-                              <p className="text-sm">Total: {data.total}</p>
-                              <p className="text-sm">Sold: {data.sold}</p>
-                              <p className="text-sm">Conversion: {data.conversionRate.toFixed(1)}%</p>
+                              <p className="font-medium">{label} Dispatch</p>
+                              <p className="text-sm font-bold">Total Leads: {data.total}</p>
+                              <div className="mt-2 space-y-1">
+                                <p className="text-sm text-green-600">Sold: {data.sold}</p>
+                                <p className="text-sm text-red-600">No Sale: {data.noSale}</p>
+                                <p className="text-sm text-orange-600">Credit Fail: {data.creditFail}</p>
+                                <p className="text-sm text-yellow-600">Canceled: {data.canceled}</p>
+                                {data.other > 0 && <p className="text-sm text-gray-600">Other: {data.other}</p>}
+                              </div>
+                              <p className="text-sm font-medium mt-2">Conversion Rate: {data.conversionRate.toFixed(1)}%</p>
                             </div>
                           );
                         }
                         return null;
                       }}
                     />
-                    <Bar dataKey="conversionRate" fill={chartConfig.scheduled.color} />
+                    {/* Net deals on bottom */}
+                    <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold" />
+                    {/* Canceled/no sales stacked on top */}
+                    <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale" />
+                    <Bar dataKey="creditFail" stackId="a" fill={chartConfig.credit_fail.color} name="Credit Fail" />
+                    <Bar dataKey="canceled" stackId="a" fill={chartConfig.canceled.color} name="Canceled" />
+                    <Bar dataKey="other" stackId="a" fill="#94a3b8" name="Other" />
+                    <ChartLegend content={<ChartLegendContent />} />
                   </BarChart>
                 </ChartContainer>
               </CardContent>
@@ -1009,6 +1047,16 @@ export default function AnalyticsDashboard() {
                       nameKey="status"
                       innerRadius={60}
                       strokeWidth={5}
+                      label={({ status, count, percent }) => {
+                        // Only show label if slice is larger than 8% to avoid overcrowding
+                        if (percent > 0.08) {
+                          return `${status}: ${(percent * 100).toFixed(0)}%`;
+                        }
+                        return "";
+                      }}
+                      labelLine={false}
+                      fontSize={12}
+                      fontWeight="bold"
                     >
                       {[
                         { status: "Sales", count: analytics.teamStats?.leadsByStatus.sold || 0, fill: chartConfig.sold.color },
