@@ -692,9 +692,10 @@ export default function AnalyticsDashboard() {
 
     const totalLeads = filteredLeads.length;
     const soldLeads = filteredLeads.filter(lead => lead.status === 'sold').length;
-    const conversionRate = totalLeads > 0 ? ((soldLeads / totalLeads) * 100).toFixed(1) : "0";
+    const sitLeads = filteredLeads.filter(lead => ['sold', 'no_sale'].includes(lead.status)).length;
+    const sitRate = totalLeads > 0 ? ((sitLeads / totalLeads) * 100).toFixed(1) : "0";
     
-    return { totalLeads, soldLeads, conversionRate };
+    return { totalLeads, soldLeads, sitLeads, sitRate };
   };
 
   const filteredMetrics = getFilteredMetrics();
@@ -759,10 +760,11 @@ export default function AnalyticsDashboard() {
         <Card className="dark:card-glass dark:glow-cyan dark:border-cyan/20">
           <CardContent className="p-6">
             <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-green-600 dark:text-cyan" />
+              <Target className="h-8 w-8 text-green-600 dark:text-cyan" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Conversion Rate</p>
-                <p className="text-2xl font-bold">{filteredMetrics.conversionRate}%</p>
+                <p className="text-sm font-medium text-muted-foreground">Sit Rate</p>
+                <p className="text-2xl font-bold">{filteredMetrics.sitRate}%</p>
+                <p className="text-xs text-muted-foreground">Sold, No Sale, Credit Fail</p>
               </div>
             </div>
           </CardContent>

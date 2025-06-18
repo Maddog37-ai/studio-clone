@@ -29,8 +29,8 @@ export const calculateSetterPerformance = (leads: Lead[]): SetterPerformance[] =
 
       existing.totalLeads++;
 
-      // Count sits (completed appointments) - using the actual Lead status enum
-      if (['sold', 'no_sale', 'credit_fail'].includes(lead.status)) {
+      // Count sits (actual appointments that showed up) - sold and no_sale only
+      if (['sold', 'no_sale'].includes(lead.status)) {
         existing.sitCount++;
       }
 

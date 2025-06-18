@@ -171,7 +171,7 @@ export default function PerformanceDashboard({ className }: PerformanceDashboard
 
       existing.totalLeads++;
 
-      if (['sold', 'no_sale', 'credit_fail'].includes(lead.status)) {
+      if (['sold', 'no_sale'].includes(lead.status)) {
         existing.sitCount++;
       }
 
@@ -257,7 +257,7 @@ export default function PerformanceDashboard({ className }: PerformanceDashboard
     const setterPerformance = calculateSetterPerformance();
     const closerPerformance = calculateCloserPerformance();
 
-    const totalSits = leads.filter(lead => ['sold', 'no_sale', 'credit_fail'].includes(lead.status)).length;
+    const totalSits = leads.filter(lead => ['sold', 'no_sale'].includes(lead.status)).length;
     const totalSold = leads.filter(lead => lead.status === 'sold').length;
     const totalNoSale = leads.filter(lead => lead.status === 'no_sale').length;
     const totalFailedCredit = leads.filter(lead => lead.status === 'credit_fail').length;
