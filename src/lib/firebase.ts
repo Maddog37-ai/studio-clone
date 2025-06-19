@@ -1,6 +1,6 @@
 import {initializeApp, getApps, getApp} from "firebase/app";
 import {getAuth} from "firebase/auth";
-import {getFirestore} from "firebase/firestore";
+import {getFirestore, connectFirestoreEmulator} from "firebase/firestore";
 import {getStorage} from "firebase/storage";
 import {getFunctions, httpsCallable} from "firebase/functions";
 
@@ -21,6 +21,16 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
+
+// Connect to emulator in development
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  try {
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    console.log('🔥 Connected to Firestore emulator');
+  } catch (error) {
+    console.log('Firestore emulator already connected or not available');
+  }
+}
 
 // Cloud function calls
 export const acceptJobFunction = httpsCallable(functions, 'acceptJob');
