@@ -36,11 +36,14 @@ messaging.onBackgroundMessage((payload) => {
     silent: false,
     timestamp: Date.now(),
     renotify: true,
+    // iOS-specific options
+    dir: 'ltr',
+    lang: 'en',
     // Essential for mobile badge notifications
     showTrigger: payload.data?.showTrigger || null,
   };
 
-  // Update badge count for mobile devices
+  // Update badge count for mobile devices (iOS PWA support)
   if ('setAppBadge' in navigator) {
     const badgeCount = parseInt(payload.data?.badgeCount || '1');
     navigator.setAppBadge(badgeCount).catch(err => {
