@@ -4,11 +4,12 @@ import Link from "next/link";
 import {useAuth} from "@/hooks/use-auth";
 import {Button} from "@/components/ui/button";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {LogOut, UserCircle, ClipboardList, PlusCircle} from "lucide-react";
+import {LogOut, UserCircle, PlusCircle} from "lucide-react";
 import AvailabilityToggle from "./availability-toggle";
 import {useState} from "react";
 import dynamic from "next/dynamic";
 import TeamChatButton from "./floating-team-chat-button";
+import GearIcon from "@/components/ui/gear-icon";
 
 // Dynamic import with Next.js dynamic to avoid circular dependency issues
 const CreateLeadForm = dynamic(() => import("./create-lead-form"), {
@@ -32,7 +33,7 @@ export default function DashboardHeader() {
         <div className="container flex h-16 sm:h-18 max-w-7xl mx-auto items-center px-4 sm:px-6 lg:px-8">
           <Link href="/dashboard" className="mr-6 sm:mr-8 flex items-center space-x-3 text-[#3574F2] dark:text-turquoise group">
             <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 rounded-xl group-hover:from-[#3574F2]/30 group-hover:to-[#5096F2]/20 dark:group-hover:from-turquoise/30 dark:group-hover:to-cyan/20 transition-all duration-300 shadow-sm dark:glow-turquoise">
-              <ClipboardList className="h-6 w-6 sm:h-7 sm:w-7 text-[#3574F2] dark:text-turquoise" />
+              <GearIcon className="h-6 w-6 sm:h-7 sm:w-7 text-[#3574F2] dark:text-turquoise" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl sm:text-2xl font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan bg-clip-text text-transparent">LeadFlow</span>

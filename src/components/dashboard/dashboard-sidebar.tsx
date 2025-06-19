@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   LogOut, 
   UserCircle, 
-  ClipboardList, 
+  ClipboardList,
   PlusCircle, 
   User,
   Home,
@@ -22,6 +22,7 @@ import { useState } from "react";
 import React from "react";
 import dynamic from "next/dynamic";
 import TeamChatButton from "./floating-team-chat-button";
+import GearIcon from "@/components/ui/gear-icon";
 import {
   Sidebar,
   SidebarContent,
@@ -97,7 +98,7 @@ function DashboardSidebarContent() {
         <SidebarHeader className="border-b border-border/20 dark:border-turquoise/20">
           <div className="flex items-center space-x-3 p-4">
             <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 rounded-xl shadow-sm dark:glow-turquoise">
-              <ClipboardList className="h-6 w-6 text-[#3574F2] dark:text-turquoise" />
+              <GearIcon className="h-6 w-6 text-[#3574F2] dark:text-turquoise" />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
               <span className="text-lg font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan bg-clip-text text-transparent">

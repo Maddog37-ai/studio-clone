@@ -149,7 +149,12 @@ export default function LeadManagementPage() {
     });
   }, [leads, searchTerm, statusFilter, dispatchFilter, dateFilter]);
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusBadgeVariant = (status: string, dispatchType?: string) => {
+    // For immediate dispatch leads, show neutral variant for N/A status
+    if (dispatchType === "immediate") {
+      return "secondary";
+    }
+    
     switch (status) {
       case "sold":
         return "default";
@@ -471,8 +476,8 @@ export default function LeadManagementPage() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant={getStatusBadgeVariant(lead.status)}>
-                            {lead.status.replace("_", " ")}
+                          <Badge variant={getStatusBadgeVariant(lead.status, lead.dispatchType)}>
+                            {lead.dispatchType === "immediate" ? "N/A" : lead.status.replace("_", " ")}
                           </Badge>
                         )}
                       </TableCell>

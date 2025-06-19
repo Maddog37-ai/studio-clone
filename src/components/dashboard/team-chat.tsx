@@ -456,11 +456,8 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
   };
 
   const getChannelIcon = (channel: ChatChannel) => {
-    if (channel.type === "region") {
-      return <Hash className="h-4 w-4" />;
-    } else {
-      return <Users className="h-4 w-4" />;
-    }
+    // Only team chats are supported now
+    return <MessageCircle className="h-4 w-4" />;
   };
 
   if (!isOpen) return null;

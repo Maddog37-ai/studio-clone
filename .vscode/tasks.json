@@ -2,12 +2,11 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Start Dev Server",
+			"label": "Debug Dev Server",
 			"type": "shell",
-			"command": "npm run dev",
+			"command": "npx next dev -p 9002",
 			"group": "build",
-			"isBackground": true,
-			"problemMatcher": []
+			"isBackground": true
 		}
 	]
 }

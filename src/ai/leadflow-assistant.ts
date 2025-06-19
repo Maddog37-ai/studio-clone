@@ -1,5 +1,5 @@
 import { ai } from './genkit';
-import { z } from 'zod';
+import * as z from 'zod';
 
 const LeadAssistantInputSchema = z.object({
   message: z.string(),

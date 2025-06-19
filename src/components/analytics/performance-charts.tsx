@@ -58,18 +58,28 @@ export function PerformanceCharts({
             Setter Performance Rates
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px]">
+        <CardContent className="p-4">
+          <ChartContainer config={chartConfig} className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={setterChartData}>
+              <BarChart data={setterChartData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fontSize: 11 }}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis tick={{ fontSize: 11 }} />
                 <ChartTooltip />
-                <ChartLegend content={<ChartLegendContent />} />
+                <ChartLegend 
+                  content={<ChartLegendContent />} 
+                  wrapperStyle={{ paddingTop: '10px' }}
+                />
                 <Bar dataKey="sitRate" fill={chartConfig.sitRate.color} name="Sit Rate %" />
-                <Bar dataKey="failedCreditRate" fill={chartConfig.failedCredit.color} name="Failed Credit %" />
-                <Bar dataKey="cancelNoShowRate" fill={chartConfig.cancelNoShow.color} name="Cancel/No Show %" />
+                <Bar dataKey="failedCreditRate" fill={chartConfig.failedCredit.color} name="Failed Credit Rate %" />
+                <Bar dataKey="cancelNoShowRate" fill={chartConfig.cancelNoShow.color} name="Cancel/No Show Rate %" />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
@@ -84,18 +94,28 @@ export function PerformanceCharts({
             Closer Performance Rates
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px]">
+        <CardContent className="p-4">
+          <ChartContainer config={chartConfig} className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={closerChartData}>
+              <BarChart data={closerChartData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fontSize: 11 }}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis tick={{ fontSize: 11 }} />
                 <ChartTooltip />
-                <ChartLegend content={<ChartLegendContent />} />
+                <ChartLegend 
+                  content={<ChartLegendContent />} 
+                  wrapperStyle={{ paddingTop: '10px' }}
+                />
                 <Bar dataKey="closeRate" fill={chartConfig.closeRate.color} name="Close Rate %" />
                 <Bar dataKey="conversionRate" fill={chartConfig.selfGen.color} name="Conversion Rate %" />
-                <Bar dataKey="selfGenRate" fill={chartConfig.immediate.color} name="Self-Gen Rate %" />
+                <Bar dataKey="selfGenRate" fill={chartConfig.immediate.color} name="Self-Generated Rate %" />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
@@ -107,20 +127,20 @@ export function PerformanceCharts({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Lead Distribution
+            Lead Distribution by Type
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px]">
+        <CardContent className="p-4">
+          <ChartContainer config={chartConfig} className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <Pie
                   data={leadDistributionData}
                   cx="50%"
-                  cy="50%"
+                  cy="45%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  label={({ name, percent }) => percent > 0.05 ? `${name}: ${(percent * 100).toFixed(0)}%` : ''}
+                  outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -128,7 +148,15 @@ export function PerformanceCharts({
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <ChartTooltip />
+                <ChartTooltip 
+                  formatter={(value, name) => [value, name]}
+                  labelFormatter={(label) => `${label} Leads`}
+                />
+                <ChartLegend 
+                  content={<ChartLegendContent />}
+                  verticalAlign="bottom"
+                  height={36}
+                />
               </PieChart>
             </ResponsiveContainer>
           </ChartContainer>
@@ -140,24 +168,41 @@ export function PerformanceCharts({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Performance Trends
+            Performance Trends Over Time
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px]">
+        <CardContent className="p-4">
+          <ChartContainer config={chartConfig} className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData}>
+              <LineChart data={trendData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <ChartTooltip />
-                <ChartLegend content={<ChartLegendContent />} />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 11 }}
+                  interval="preserveStartEnd"
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis tick={{ fontSize: 11 }} />
+                <ChartTooltip 
+                  formatter={(value, name) => [
+                    typeof value === 'number' ? value.toLocaleString() : value,
+                    name
+                  ]}
+                  labelFormatter={(label) => `Date: ${label}`}
+                />
+                <ChartLegend 
+                  content={<ChartLegendContent />}
+                  wrapperStyle={{ paddingTop: '10px' }}
+                />
                 <Line 
                   type="monotone" 
                   dataKey="totalLeads" 
                   stroke={chartConfig.total.color} 
-                  name="Total Leads" 
+                  name="Total Leads Count" 
                   strokeWidth={2}
+                  dot={{ r: 3 }}
                 />
                 <Line 
                   type="monotone" 
@@ -165,6 +210,7 @@ export function PerformanceCharts({
                   stroke={chartConfig.sitRate.color} 
                   name="Sit Rate %" 
                   strokeWidth={2}
+                  dot={{ r: 3 }}
                 />
                 <Line 
                   type="monotone" 
@@ -172,6 +218,7 @@ export function PerformanceCharts({
                   stroke={chartConfig.closeRate.color} 
                   name="Close Rate %" 
                   strokeWidth={2}
+                  dot={{ r: 3 }}
                 />
               </LineChart>
             </ResponsiveContainer>

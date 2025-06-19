@@ -103,7 +103,15 @@ export default function LeadCard({lead, context = "in-process", onLeadClick}: Le
       <>
         <Card 
           className={`shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col dark:card-glass dark:glow-turquoise dark:border-turquoise/20 ${canUpdateDisposition ? 'cursor-pointer hover:dark:glow-cyan' : ''}`}
-          onClick={canUpdateDisposition ? () => onLeadClick?.(lead) : undefined}
+          onClick={canUpdateDisposition ? () => {
+            console.log('🔥 LeadCard - Card clicked for lead details:', { 
+              leadId: lead.id, 
+              customerName: lead.customerName,
+              context: context,
+              userRole: user?.role 
+            });
+            onLeadClick?.(lead);
+          } : undefined}
         >
           <CardHeader className="pb-2 pt-3 px-3 sm:pb-3 sm:pt-4 sm:px-4">
             <div className="flex justify-between items-start">
@@ -142,6 +150,12 @@ export default function LeadCard({lead, context = "in-process", onLeadClick}: Le
             <CardFooter className="pt-0 pb-2 px-3 sm:pb-3 sm:px-4">
               <Button 
                 onClick={(e) => {
+                  console.log('🔥 LeadCard - Update status button clicked:', { 
+                    leadId: lead.id, 
+                    customerName: lead.customerName,
+                    context: context,
+                    userRole: user?.role 
+                  });
                   e.stopPropagation();
                   setIsModalOpen(true);
                 }} 
@@ -289,7 +303,15 @@ export default function LeadCard({lead, context = "in-process", onLeadClick}: Le
             <div className="flex items-center text-muted-foreground text-xs mt-1">
               <ImageIcon className="mr-2 h-3 w-3 text-gray-400 flex-shrink-0" />
               <button
-                onClick={() => setIsPhotoGalleryOpen(true)}
+                onClick={() => {
+                  console.log('🔥 LeadCard - Photo gallery clicked:', { 
+                    leadId: lead.id, 
+                    customerName: lead.customerName,
+                    photoCount: lead.photoUrls?.length || 0,
+                    userRole: user?.role 
+                  });
+                  setIsPhotoGalleryOpen(true);
+                }}
                 className="text-primary hover:underline cursor-pointer"
               >
                 {lead.photoUrls.length} photo(s) attached - Click to view
@@ -301,6 +323,12 @@ export default function LeadCard({lead, context = "in-process", onLeadClick}: Le
           <CardFooter className="pt-0 pb-3 px-4">
             <Button 
               onClick={() => {
+                console.log('🔥 LeadCard - Disposition modal trigger clicked:', { 
+                  leadId: lead.id, 
+                  customerName: lead.customerName,
+                  context: context,
+                  userRole: user?.role 
+                });
                 setIsModalOpen(true);
               }} 
               size="sm" 

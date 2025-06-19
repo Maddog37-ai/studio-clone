@@ -74,8 +74,8 @@ export interface ChatMessage {
   senderName: string;
   senderRole: UserRole;
   senderAvatar?: string; // URL to sender's profile photo
-  chatId: string; // either teamId for team chat or "empire-region" for region-wide
-  chatType: "team" | "region" | "bot";
+  chatId: string; // teamId for team chat
+  chatType: "team";
   timestamp: Timestamp;
   editedAt?: Timestamp;
   isDeleted?: boolean;
@@ -91,10 +91,10 @@ export interface ChatMessage {
 }
 
 export interface ChatChannel {
-  id: string; // teamId, "empire-region", or "ra-bot"
-  name: string; // team name, "Empire Region", or "Ask Ra"
-  type: "team" | "region" | "bot";
-  teamId?: string; // for team chats
+  id: string; // teamId 
+  name: string; // team name
+  type: "team";
+  teamId: string; // for team chats
   lastMessageId?: string;
   lastMessageContent?: string;
   lastMessageTimestamp?: Timestamp;

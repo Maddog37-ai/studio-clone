@@ -183,6 +183,11 @@ export default function CloserLineup() {
   const isOverallLoading = isLoadingAssignedCloserIds || isLoadingClosersForLineup;
 
   const handleCardClick = () => {
+    console.log('🔥 CloserLineup - Card header clicked for manager tools:', { 
+      userRole: user?.role, 
+      canManageClosers,
+      modalWillOpen: canManageClosers 
+    });
     if (canManageClosers) {
       setIsManageModalOpen(true);
     }

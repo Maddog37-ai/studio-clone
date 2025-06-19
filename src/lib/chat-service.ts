@@ -109,17 +109,12 @@ export class ChatService {
         ...doc.data(),
       })) as ChatChannel[];
 
-      // Filter channels user has access to
+      // Filter channels user has access to - only Team chats (no region chat)
       const userChannels = allChannels.filter(channel => {
-        if (channel.type === "region") {
-          return true; // All users can access region chat
-        }
         if (channel.type === "team") {
           return channel.teamId === userTeamId; // Only team members can access team chat
         }
-        if (channel.type === "bot") {
-          return true; // All users can access bot chat
-        }
+        // Exclude region chat - only show team chats
         return false;
       });
 
@@ -131,18 +126,7 @@ export class ChatService {
   static async initializeChannels(teams: Array<{id: string, name: string, isActive: boolean}>): Promise<void> {
     const batch = writeBatch(db);
 
-    // Create Empire Region channel (for all Empire region users)
-    const regionChannelRef = doc(db, "chatChannels", "empire-region");
-    batch.set(regionChannelRef, {
-      id: "empire-region",
-      name: "Empire Region",
-      type: "region",
-      memberCount: 0,
-      isActive: true,
-      lastMessageTimestamp: serverTimestamp(),
-    });
-
-    // Create team channels (including Empire Team specifically)
+    // Create team channels only (no region channel)
     for (const team of teams) {
       if (team.isActive) {
         const teamChannelRef = doc(db, "chatChannels", team.id);
@@ -157,18 +141,6 @@ export class ChatService {
         });
       }
     }
-
-    // Create Ra bot channel
-    const raBotChannelRef = doc(db, "chatChannels", "ra-bot");
-    batch.set(raBotChannelRef, {
-      id: "ra-bot",
-      name: "Ask Ra",
-      type: "bot",
-      memberCount: 0,
-      isActive: true,
-      lastMessageTimestamp: serverTimestamp(),
-      lastMessageContent: "", // No preview for Ra bot
-    });
 
     await batch.commit();
   }

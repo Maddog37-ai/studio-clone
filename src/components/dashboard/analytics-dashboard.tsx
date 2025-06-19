@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { getTeamStatsFunction, db } from "@/lib/firebase";
@@ -11,8 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Users, Target, Activity, Calendar, DollarSign, Filter, BarChart3, PieChart as PieChartIcon, Download } from "lucide-react";
-import { collection, query, where, onSnapshot, orderBy, Timestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, Timestamp } from "firebase/firestore";
 import type { Lead, Closer } from "@/types";
+import SetterQualityEnhanced from "@/components/analytics/setter-quality-enhanced";
 
 interface TeamStats {
   teamId: string;
@@ -167,6 +168,7 @@ const chartConfig = {
 export default function AnalyticsDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     leads: [],
     closers: [],
@@ -192,7 +194,7 @@ export default function AnalyticsDashboard() {
         // Fetch team stats
         const teamStatsResult = await getTeamStatsFunction({ teamId: user.teamId });
         
-        // Setup real-time listeners for leads and closers
+        // Fetch leads and closers data using getDocs for better performance
         const leadsQuery = query(
           collection(db, "leads"),
           where("teamId", "==", user.teamId),
@@ -206,41 +208,32 @@ export default function AnalyticsDashboard() {
           orderBy("name", "asc")
         );
 
-        // Set up real-time listeners
-        const unsubscribeLeads = onSnapshot(leadsQuery, (snapshot) => {
-          const leadsData = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Lead[];
-          
-          setAnalytics(prev => ({
-            ...prev,
-            leads: leadsData,
-            teamStats: teamStatsResult.data as TeamStats
-          }));
-        });
+        // Fetch data once instead of real-time subscriptions
+        const [leadsSnapshot, closersSnapshot] = await Promise.all([
+          getDocs(leadsQuery),
+          getDocs(closersQuery)
+        ]);
 
-        const unsubscribeClosers = onSnapshot(closersQuery, (snapshot) => {
-          const closersData = snapshot.docs.map(doc => ({
-            uid: doc.id,
-            ...doc.data()
-          })) as Closer[];
-          
-          setAnalytics(prev => ({
-            ...prev,
-            closers: closersData
-          }));
+        const leadsData = leadsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Lead[];
+
+        const closersData = closersSnapshot.docs.map(doc => ({
+          uid: doc.id,
+          ...doc.data()
+        })) as Closer[];
+
+        setAnalytics({
+          leads: leadsData,
+          closers: closersData,
+          teamStats: teamStatsResult.data as TeamStats
         });
 
         setLoading(false);
 
-        // Return cleanup function
-        return () => {
-          unsubscribeLeads();
-          unsubscribeClosers();
-        };
-
-      } catch {
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
         toast({
           title: "Error",
           description: "Failed to load analytics data.",
@@ -250,18 +243,11 @@ export default function AnalyticsDashboard() {
       }
     };
 
-    const cleanup = fetchAnalytics();
-    
-    // Cleanup on unmount
-    return () => {
-      if (cleanup && typeof cleanup.then === 'function') {
-        cleanup.then(cleanupFn => cleanupFn && cleanupFn());
-      }
-    };
+    fetchAnalytics();
   }, [user?.teamId, dateRange, toast]);
 
-  // Calculate setter analytics (lead quality tracking)
-  const calculateSetterAnalytics = (): SetterAnalytics[] => {
+  // Calculate setter analytics (lead quality tracking) - memoized for performance
+  const setterAnalytics = useMemo((): SetterAnalytics[] => {
     const setterMap = new Map<string, {
       uid: string;
       name: string;
@@ -300,10 +286,10 @@ export default function AnalyticsDashboard() {
       ...setter,
       conversionRate: setter.totalLeads > 0 ? (setter.soldLeads / setter.totalLeads) * 100 : 0
     }));
-  };
+  }, [analytics.leads, filterCloser]);
 
-  // Calculate closer analytics
-  const calculateCloserAnalytics = (): CloserAnalytics[] => {
+  // Calculate closer analytics - memoized for performance
+  const closerAnalytics = useMemo((): CloserAnalytics[] => {
     const closerMap = new Map<string, {
       uid: string;
       name: string;
@@ -347,10 +333,10 @@ export default function AnalyticsDashboard() {
       closingPercentage: closer.totalAssigned > 0 ? 
         ((closer.totalSold + closer.totalNoSale + closer.totalFailedCredits) / closer.totalAssigned) * 100 : 0
     }));
-  };
+  }, [analytics.leads, filterCloser]);
 
-  // Calculate dispatch type comparison
-  const calculateDispatchAnalytics = (): DispatchAnalytics => {
+  // Calculate dispatch type comparison - memoized for performance
+  const dispatchAnalytics = useMemo((): DispatchAnalytics => {
     const immediate = { total: 0, sold: 0, conversionRate: 0 };
     const scheduled = { total: 0, sold: 0, conversionRate: 0 };
 
@@ -373,7 +359,7 @@ export default function AnalyticsDashboard() {
     scheduled.conversionRate = scheduled.total > 0 ? (scheduled.sold / scheduled.total) * 100 : 0;
 
     return { immediate, scheduled };
-  };
+  }, [analytics.leads, filterCloser]);
 
   // Export analytics report as CSV
   const exportAnalyticsReport = () => {
@@ -390,7 +376,7 @@ export default function AnalyticsDashboard() {
     reportData.push(['KEY METRICS']);
     reportData.push(['Total Leads:', filteredMetrics.totalLeads]);
     reportData.push(['Conversion Rate:', `${filteredMetrics.conversionRate}%`]);
-    reportData.push(['Average Closing Ratio:', `${avgClosingRatio}%`]);
+    reportData.push(['Average Closing Rate:', `${avgClosingRatio}%`]);
     reportData.push(['On Duty Closers:', analytics.teamStats?.onDutyClosers || 0]);
     reportData.push([]);
     
@@ -411,7 +397,7 @@ export default function AnalyticsDashboard() {
     
     // Closer analytics
     reportData.push(['CLOSER PERFORMANCE']);
-    reportData.push(['Name', 'Total Assigned', 'Total Sold', 'No Sales', 'Failed Credits', 'Closing Ratio']);
+    reportData.push(['Name', 'Total Assigned', 'Total Sold', 'No Sales', 'Failed Credits', 'Closing Rate']);
     closerAnalytics.forEach(closer => {
       reportData.push([
         closer.name,
@@ -574,38 +560,30 @@ export default function AnalyticsDashboard() {
     return Math.round(analytics.leads.length / days);
   };
 
-  // Check user permissions
-  if (!user || user.role === "setter") {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Analytics not available for your role.</p>
-      </div>
-    );
-  }
+  const avgClosingRatio = useMemo(() => 
+    closerAnalytics.length > 0 ? 
+      (closerAnalytics.reduce((sum, closer) => sum + closer.closingRatio, 0) / closerAnalytics.length).toFixed(1) : "0",
+    [closerAnalytics]
+  );
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
-                <div className="h-8 bg-muted rounded w-3/4"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // Calculate key metrics based on filtered data - memoized for performance
+  const filteredMetrics = useMemo(() => {
+    // Filter leads by selected closer if not "all"
+    const filteredLeads = filterCloser === "all" 
+      ? analytics.leads 
+      : analytics.leads.filter(lead => lead.assignedCloserId === filterCloser);
 
-  const setterAnalytics = calculateSetterAnalytics();
-  const closerAnalytics = calculateCloserAnalytics();
-  const dispatchAnalytics = calculateDispatchAnalytics();
+    const totalLeads = filteredLeads.length;
+    const soldLeads = filteredLeads.filter(lead => lead.status === 'sold').length;
+    const sitLeads = filteredLeads.filter(lead => ['sold', 'no_sale'].includes(lead.status)).length;
+    const sitRate = totalLeads > 0 ? ((sitLeads / totalLeads) * 100).toFixed(1) : "0";
+    const conversionRate = totalLeads > 0 ? ((soldLeads / totalLeads) * 100).toFixed(1) : "0";
+    
+    return { totalLeads, soldLeads, sitLeads, sitRate, conversionRate };
+  }, [analytics.leads, filterCloser]);
 
-  // Prepare chart data - filtered by selected closer
-  const statusData = (() => {
+  // Prepare chart data - filtered by selected closer - memoized for performance
+  const statusData = useMemo(() => {
     if (!analytics.leads.length) return [];
     
     // Filter leads by selected closer if not "all"
@@ -630,20 +608,21 @@ export default function AnalyticsDashboard() {
         fill: chartConfig[status as keyof typeof chartConfig]?.color || "#64748b", // Default fallback color
       }))
       .sort((a, b) => b.count - a.count); // Sort by count descending
-  })();
+  }, [analytics.leads, filterCloser]);
 
-  const closerPerformanceData = closerAnalytics
-    .filter(closer => filterCloser === "all" || closer.uid === filterCloser)
-    .map(closer => ({
-      name: closer.name.split(" ")[0],
-      sold: closer.totalSold,
-      noSale: closer.totalNoSale,
-      failedCredits: closer.totalFailedCredits,
-      closingRatio: closer.closingRatio,
-    }));
+  const closerPerformanceData = useMemo(() => 
+    closerAnalytics
+      .filter(closer => filterCloser === "all" || closer.uid === filterCloser)
+      .map(closer => ({
+        name: closer.name.split(" ")[0],
+        sold: closer.totalSold,
+        noSale: closer.totalNoSale,
+        failedCredits: closer.totalFailedCredits,
+        closingRatio: closer.closingRatio,
+      })), [closerAnalytics, filterCloser]);
 
-  // Prepare stacked dispatch comparison data showing total volume with dispositions
-  const dispatchComparisonData = (() => {
+  // Prepare stacked dispatch comparison data showing total volume with dispositions - memoized for performance
+  const dispatchComparisonData = useMemo(() => {
     const filteredLeads = filterCloser === "all" 
       ? analytics.leads 
       : analytics.leads.filter(lead => lead.assignedCloserId === filterCloser);
@@ -672,35 +651,33 @@ export default function AnalyticsDashboard() {
       processDispatchType("immediate"),
       processDispatchType("scheduled"),
     ];
-  })();
+  }, [analytics.leads, filterCloser]);
 
-  const setterQualityData = setterAnalytics
-    .sort((a, b) => b.conversionRate - a.conversionRate)
-    .slice(0, 10)
-    .map(setter => ({
-      name: setter.name.split(" ")[0],
-      totalLeads: setter.totalLeads,
-      conversionRate: setter.conversionRate,
-    }));
+  // Check user permissions AFTER all hooks are called
+  if (!user || user.role === "setter") {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Analytics not available for your role.</p>
+      </div>
+    );
+  }
 
-  // Calculate key metrics based on filtered data
-  const getFilteredMetrics = () => {
-    // Filter leads by selected closer if not "all"
-    const filteredLeads = filterCloser === "all" 
-      ? analytics.leads 
-      : analytics.leads.filter(lead => lead.assignedCloserId === filterCloser);
-
-    const totalLeads = filteredLeads.length;
-    const soldLeads = filteredLeads.filter(lead => lead.status === 'sold').length;
-    const sitLeads = filteredLeads.filter(lead => ['sold', 'no_sale'].includes(lead.status)).length;
-    const sitRate = totalLeads > 0 ? ((sitLeads / totalLeads) * 100).toFixed(1) : "0";
-    
-    return { totalLeads, soldLeads, sitLeads, sitRate };
-  };
-
-  const filteredMetrics = getFilteredMetrics();
-  const avgClosingRatio = closerAnalytics.length > 0 ? 
-    (closerAnalytics.reduce((sum, closer) => sum + closer.closingRatio, 0) / closerAnalytics.length).toFixed(1) : "0";
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
+                <div className="h-8 bg-muted rounded w-3/4"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 dark:text-white">
@@ -775,7 +752,7 @@ export default function AnalyticsDashboard() {
             <div className="flex items-center">
               <Users className="h-8 w-8 text-purple-600 dark:text-turquoise" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Avg Closing Ratio</p>
+                <p className="text-sm font-medium text-muted-foreground">Avg Closing Rate</p>
                 <p className="text-2xl font-bold">{avgClosingRatio}%</p>
               </div>
             </div>
@@ -836,8 +813,8 @@ export default function AnalyticsDashboard() {
                     </div>
                   </div>
                 ) : (
-                  <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[300px]">
-                    <PieChart>
+                  <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                    <PieChart margin={{ top: 20, right: 20, bottom: 40, left: 20 }}>
                       <ChartTooltip 
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
@@ -858,9 +835,12 @@ export default function AnalyticsDashboard() {
                       <Pie
                         data={statusData}
                         dataKey="count"
-                        nameKey="status"
+                        nameKey="rawStatus"
+                        cx="50%"
+                        cy="45%"
                         innerRadius={60}
-                        strokeWidth={5}
+                        outerRadius={100}
+                        strokeWidth={2}
                         label={({ status, count, percent }) => {
                           // Only show label if slice is larger than 8% to avoid overcrowding
                           if (percent > 0.08) {
@@ -869,14 +849,18 @@ export default function AnalyticsDashboard() {
                           return "";
                         }}
                         labelLine={false}
-                        fontSize={12}
+                        fontSize={11}
                         fontWeight="bold"
                       >
                         {statusData.map((entry, _index) => (
                           <Cell key={`cell-${_index}`} fill={entry.fill} />
                         ))}
                       </Pie>
-                      <ChartLegend content={<ChartLegendContent />} />
+                      <ChartLegend 
+                        content={<ChartLegendContent nameKey="rawStatus" />} 
+                        verticalAlign="bottom"
+                        height={36}
+                      />
                     </PieChart>
                   </ChartContainer>
                 )}
@@ -891,12 +875,16 @@ export default function AnalyticsDashboard() {
                   Immediate vs Scheduled Lead Volume & Dispositions
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-[300px]">
-                  <BarChart data={dispatchComparisonData}>
+              <CardContent className="p-4">
+                <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                  <BarChart data={dispatchComparisonData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="type" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="type" 
+                      tick={{ fontSize: 11 }}
+                      height={40}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
@@ -920,13 +908,16 @@ export default function AnalyticsDashboard() {
                       }}
                     />
                     {/* Net deals on bottom */}
-                    <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold" />
+                    <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold Leads" />
                     {/* Canceled/no sales stacked on top */}
-                    <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale" />
-                    <Bar dataKey="creditFail" stackId="a" fill={chartConfig.credit_fail.color} name="Credit Fail" />
-                    <Bar dataKey="canceled" stackId="a" fill={chartConfig.canceled.color} name="Canceled" />
-                    <Bar dataKey="other" stackId="a" fill="#94a3b8" name="Other" />
-                    <ChartLegend content={<ChartLegendContent />} />
+                    <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale Leads" />
+                    <Bar dataKey="creditFail" stackId="a" fill={chartConfig.credit_fail.color} name="Failed Credit Leads" />
+                    <Bar dataKey="canceled" stackId="a" fill={chartConfig.canceled.color} name="Canceled Leads" />
+                    <Bar dataKey="other" stackId="a" fill="#94a3b8" name="Other Status" />
+                    <ChartLegend 
+                      content={<ChartLegendContent />} 
+                      wrapperStyle={{ paddingTop: '10px' }}
+                    />
                   </BarChart>
                 </ChartContainer>
               </CardContent>
@@ -935,64 +926,11 @@ export default function AnalyticsDashboard() {
         </TabsContent>
 
         <TabsContent value="setters" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Setter Lead Quality */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Setter Performance (Conversion Rate)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-[400px]">
-                  <BarChart data={setterQualityData} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={80} />
-                    <ChartTooltip 
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          const data = payload[0].payload;
-                          return (
-                            <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                              <p className="font-medium">{label}</p>
-                              <p className="text-sm">Total Leads: {data.totalLeads}</p>
-                              <p className="text-sm">Conversion: {data.conversionRate.toFixed(1)}%</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar dataKey="conversionRate" fill={chartConfig.sold.color} />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            {/* Setter Quality Metrics */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Setter Quality Metrics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {setterAnalytics.slice(0, 8).map((setter) => (
-                    <div key={setter.uid} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{setter.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {setter.totalLeads} leads ({setter.immediateLeads} immediate, {setter.scheduledLeads} scheduled)
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-green-600">{setter.conversionRate.toFixed(1)}%</p>
-                        <p className="text-sm text-muted-foreground">{setter.soldLeads} sold</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <SetterQualityEnhanced 
+            leads={analytics.leads}
+            dateRange={dateRange}
+            className="w-full"
+          />
         </TabsContent>
 
         <TabsContent value="closers" className="space-y-6">
@@ -1002,16 +940,27 @@ export default function AnalyticsDashboard() {
               <CardHeader>
                 <CardTitle>Closer Performance Overview</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-[400px]">
-                  <BarChart data={closerPerformanceData}>
+              <CardContent className="p-4">
+                <ChartContainer config={chartConfig} className="h-[400px] w-full">
+                  <BarChart data={closerPerformanceData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 11 }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} />
-                    <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} />
-                    <Bar dataKey="failedCredits" stackId="a" fill={chartConfig.credit_fail.color} />
+                    <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold Leads" />
+                    <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale Leads" />
+                    <Bar dataKey="failedCredits" stackId="a" fill={chartConfig.credit_fail.color} name="Failed Credit Leads" />
+                    <ChartLegend 
+                      content={<ChartLegendContent />} 
+                      wrapperStyle={{ paddingTop: '10px' }}
+                    />
                   </BarChart>
                 </ChartContainer>
               </CardContent>
@@ -1022,16 +971,17 @@ export default function AnalyticsDashboard() {
               <CardHeader>
                 <CardTitle>Closer Sales Distribution</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[400px]">
-                  <PieChart>
+              <CardContent className="p-4">
+                <ChartContainer config={chartConfig} className="h-[400px] w-full">
+                  <PieChart margin={{ top: 20, right: 20, bottom: 40, left: 20 }}>
                     <ChartTooltip 
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload;
+                          const label = chartConfig[data.status as keyof typeof chartConfig]?.label || data.status;
                           return (
                             <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                              <p className="font-medium">{data.status}</p>
+                              <p className="font-medium">{label}</p>
                               <p className="text-sm">Count: {data.count}</p>
                             </div>
                           );
@@ -1041,34 +991,42 @@ export default function AnalyticsDashboard() {
                     />
                     <Pie
                       data={[
-                        { status: "Sales", count: analytics.teamStats?.leadsByStatus.sold || 0, fill: chartConfig.sold.color },
-                        { status: "No Sales", count: analytics.teamStats?.leadsByStatus.no_sale || 0, fill: chartConfig.no_sale.color },
-                        { status: "Failed Credits", count: analytics.teamStats?.leadsByStatus.credit_fail || 0, fill: chartConfig.credit_fail.color }
+                        { status: "sold", count: analytics.teamStats?.leadsByStatus.sold || 0, fill: chartConfig.sold.color },
+                        { status: "no_sale", count: analytics.teamStats?.leadsByStatus.no_sale || 0, fill: chartConfig.no_sale.color },
+                        { status: "credit_fail", count: analytics.teamStats?.leadsByStatus.credit_fail || 0, fill: chartConfig.credit_fail.color }
                       ]}
                       dataKey="count"
                       nameKey="status"
+                      cx="50%"
+                      cy="45%"
                       innerRadius={60}
-                      strokeWidth={5}
+                      outerRadius={120}
+                      strokeWidth={2}
                       label={({ status, count, percent }) => {
                         // Only show label if slice is larger than 8% to avoid overcrowding
                         if (percent > 0.08) {
-                          return `${status}: ${(percent * 100).toFixed(0)}%`;
+                          const label = chartConfig[status as keyof typeof chartConfig]?.label || status;
+                          return `${label}: ${(percent * 100).toFixed(0)}%`;
                         }
                         return "";
                       }}
                       labelLine={false}
-                      fontSize={12}
+                      fontSize={11}
                       fontWeight="bold"
                     >
                       {[
-                        { status: "Sales", count: analytics.teamStats?.leadsByStatus.sold || 0, fill: chartConfig.sold.color },
-                        { status: "No Sales", count: analytics.teamStats?.leadsByStatus.no_sale || 0, fill: chartConfig.no_sale.color },
-                        { status: "Failed Credits", count: analytics.teamStats?.leadsByStatus.credit_fail || 0, fill: chartConfig.credit_fail.color }
+                        { status: "sold", count: analytics.teamStats?.leadsByStatus.sold || 0, fill: chartConfig.sold.color },
+                        { status: "no_sale", count: analytics.teamStats?.leadsByStatus.no_sale || 0, fill: chartConfig.no_sale.color },
+                        { status: "credit_fail", count: analytics.teamStats?.leadsByStatus.credit_fail || 0, fill: chartConfig.credit_fail.color }
                       ].map((entry, _index) => (
                         <Cell key={`cell-${_index}`} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <ChartLegend content={<ChartLegendContent />} />
+                    <ChartLegend 
+                      content={<ChartLegendContent />} 
+                      verticalAlign="bottom"
+                      height={36}
+                    />
                   </PieChart>
                 </ChartContainer>
               </CardContent>
@@ -1175,7 +1133,7 @@ export default function AnalyticsDashboard() {
                       </div>
                     </div>
                     <div className="text-right ml-4">
-                      <p className="text-sm text-muted-foreground">Closing Ratio</p>
+                      <p className="text-sm text-muted-foreground">Closing Rate</p>
                       <p className="text-3xl font-bold text-blue-600">{closer.closingRatio.toFixed(1)}%</p>
                       <p className="text-sm text-muted-foreground mt-1">
                         Closing Score: {closer.closingPercentage.toFixed(1)}%
@@ -1195,26 +1153,39 @@ export default function AnalyticsDashboard() {
               <CardHeader>
                 <CardTitle>Lead Volume Trends</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-[300px]">
-                  <LineChart data={generateTrendData()}>
+              <CardContent className="p-4">
+                <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                  <LineChart data={generateTrendData()} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 11 }}
+                      interval="preserveStartEnd"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Line 
                       type="monotone" 
                       dataKey="totalLeads" 
                       stroke={chartConfig.leads.color} 
                       strokeWidth={2}
-                      name="Total Leads"
+                      name="Total Leads Count"
+                      dot={{ r: 3 }}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="soldLeads" 
                       stroke={chartConfig.sold.color} 
                       strokeWidth={2}
-                      name="Sold Leads"
+                      name="Sold Leads Count"
+                      dot={{ r: 3 }}
+                    />
+                    <ChartLegend 
+                      content={<ChartLegendContent />} 
+                      wrapperStyle={{ paddingTop: '10px' }}
                     />
                   </LineChart>
                 </ChartContainer>
@@ -1226,12 +1197,19 @@ export default function AnalyticsDashboard() {
               <CardHeader>
                 <CardTitle>Conversion Rate Trends</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-[300px]">
-                  <LineChart data={generateTrendData()}>
+              <CardContent className="p-4">
+                <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                  <LineChart data={generateTrendData()} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 11 }}
+                      interval="preserveStartEnd"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
@@ -1253,14 +1231,16 @@ export default function AnalyticsDashboard() {
                       dataKey="conversionRate" 
                       stroke={chartConfig.assigned.color} 
                       strokeWidth={2}
-                      name="Overall"
+                      name="Overall Conversion Rate"
+                      dot={{ r: 3 }}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="immediateConversion" 
                       stroke={chartConfig.immediate.color} 
                       strokeWidth={2}
-                      name="Immediate"
+                      name="Immediate Dispatch Rate"
+                      dot={{ r: 3 }}
                     />
                     <Line 
                       type="monotone" 
@@ -1268,6 +1248,7 @@ export default function AnalyticsDashboard() {
                       stroke={chartConfig.scheduled.color} 
                       strokeWidth={2}
                       name="Scheduled"
+                      dot={{ r: 3 }}
                     />
                   </LineChart>
                 </ChartContainer>

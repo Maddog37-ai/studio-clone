@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
@@ -31,18 +31,18 @@ interface PerformanceDashboardProps {
 }
 
 const chartConfig = {
-  sitRate: { label: "Sit Rate", color: "#10b981" },
-  closeRate: { label: "Close Rate", color: "#3b82f6" },
-  failedCredit: { label: "Failed Credit", color: "#f59e0b" },
-  cancelNoShow: { label: "Cancel/No Show", color: "#ef4444" },
-  immediate: { label: "Immediate", color: "#8b5cf6" },
-  scheduled: { label: "Scheduled", color: "#06b6d4" },
-  selfGen: { label: "Self-Generated", color: "#84cc16" },
-  total: { label: "Total", color: "#6b7280" },
+  sitRate: { label: "Sit Rate (%)", color: "#10b981" },
+  closeRate: { label: "Close Rate (%)", color: "#3b82f6" },
+  failedCredit: { label: "Failed Credit Rate (%)", color: "#f59e0b" },
+  cancelNoShow: { label: "Cancel/No Show Rate (%)", color: "#ef4444" },
+  immediate: { label: "Immediate Dispatch", color: "#8b5cf6" },
+  scheduled: { label: "Scheduled Dispatch", color: "#06b6d4" },
+  selfGen: { label: "Self-Generated Leads", color: "#84cc16" },
+  total: { label: "Total Leads Count", color: "#6b7280" },
   appointments: { label: "Completed Appointments", color: "#059669" },
-  sold: { label: "Sold", color: "#10b981" },
-  no_sale: { label: "No Sale", color: "#ef4444" },
-  credit_fail: { label: "Credit Fail", color: "#f97316" },
+  sold: { label: "Sold Leads", color: "#10b981" },
+  no_sale: { label: "No Sale Leads", color: "#ef4444" },
+  credit_fail: { label: "Credit Failed Leads", color: "#f97316" },
 };
 
 export default function PerformanceDashboard({ className }: PerformanceDashboardProps) {
@@ -119,20 +119,33 @@ export default function PerformanceDashboard({ className }: PerformanceDashboard
     };
   }, [user?.teamId, dateRange, toast]);
 
-  // Calculate performance metrics using extracted utility functions
-  const setterPerformance = calculateSetterPerformance(leads);
-  const closerPerformance = calculateCloserPerformance(leads);
-  const teamMetrics = calculateTeamMetrics(leads, setterPerformance, closerPerformance);
-  const trendData = generateTrendData(leads);
+  // Calculate performance metrics using extracted utility functions with memoization
+  const setterPerformance = useMemo(() => calculateSetterPerformance(leads), [leads]);
+  const closerPerformance = useMemo(() => calculateCloserPerformance(leads), [leads]);
+  const teamMetrics = useMemo(() => calculateTeamMetrics(leads, setterPerformance, closerPerformance), [leads, setterPerformance, closerPerformance]);
+  const trendData = useMemo(() => generateTrendData(leads), [leads]);
 
-  // Handle exports
-  const handleExport = () => {
+  // Filter data based on selected filters
+  const filteredSetterPerformance = useMemo(() => {
+    return selectedSetter === "all" 
+      ? setterPerformance 
+      : setterPerformance.filter(setter => setter.uid === selectedSetter);
+  }, [setterPerformance, selectedSetter]);
+
+  const filteredCloserPerformance = useMemo(() => {
+    return selectedCloser === "all" 
+      ? closerPerformance 
+      : closerPerformance.filter(closer => closer.uid === selectedCloser);
+  }, [closerPerformance, selectedCloser]);
+
+  // Handle exports with memoization
+  const handleExport = useCallback(() => {
     exportToCSV({ setterPerformance, closerPerformance, teamMetrics }, dateRange);
     toast({
       title: "Export successful",
       description: "Performance data has been exported to CSV.",
     });
-  };
+  }, [setterPerformance, closerPerformance, teamMetrics, dateRange, toast]);
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -164,12 +177,12 @@ export default function PerformanceDashboard({ className }: PerformanceDashboard
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <SetterPerformanceTable
-              setterPerformance={setterPerformance.slice(0, 5)}
+              setterPerformance={filteredSetterPerformance.slice(0, 5)}
               selectedSetter={selectedSetter}
               onSetterSelect={setSelectedSetter}
             />
             <CloserPerformanceTable
-              closerPerformance={closerPerformance.slice(0, 5)}
+              closerPerformance={filteredCloserPerformance.slice(0, 5)}
               selectedCloser={selectedCloser}
               onCloserSelect={setSelectedCloser}
             />
@@ -178,7 +191,7 @@ export default function PerformanceDashboard({ className }: PerformanceDashboard
 
         <TabsContent value="setters" className="space-y-6">
           <SetterPerformanceTable
-            setterPerformance={setterPerformance}
+            setterPerformance={filteredSetterPerformance}
             selectedSetter={selectedSetter}
             onSetterSelect={setSelectedSetter}
           />
@@ -186,7 +199,7 @@ export default function PerformanceDashboard({ className }: PerformanceDashboard
 
         <TabsContent value="closers" className="space-y-6">
           <CloserPerformanceTable
-            closerPerformance={closerPerformance}
+            closerPerformance={filteredCloserPerformance}
             selectedCloser={selectedCloser}
             onCloserSelect={setSelectedCloser}
           />
@@ -194,8 +207,8 @@ export default function PerformanceDashboard({ className }: PerformanceDashboard
 
         <TabsContent value="charts" className="space-y-6">
           <PerformanceCharts
-            setterPerformance={setterPerformance}
-            closerPerformance={closerPerformance}
+            setterPerformance={filteredSetterPerformance}
+            closerPerformance={filteredCloserPerformance}
             trendData={trendData}
             chartConfig={chartConfig}
           />

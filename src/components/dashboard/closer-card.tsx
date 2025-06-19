@@ -62,6 +62,14 @@ export default function CloserCard({
   const showInteractiveSwitch = canUserManagerOrSelfToggle && allowInteractiveToggle && !assignedLeadName;
 
   const handleToggleCloserAvailability = async (checked: boolean) => {
+    console.log('🔥 CloserCard - Status toggle clicked:', { 
+      closerName: closer.name, 
+      closerUid: closer.uid, 
+      currentStatus: closer.status,
+      newStatus: checked ? "On Duty" : "Off Duty",
+      userRole: user?.role 
+    });
+
     if (!user || !canUserManagerOrSelfToggle || assignedLeadName) return;
 
     setIsUpdatingStatus(true);
@@ -105,7 +113,14 @@ export default function CloserCard({
           )}
           <Avatar 
             className="h-10 w-10 border-2 shadow-md flex-shrink-0 cursor-pointer transition-colors border-blue-200 dark:border-blue-700 hover:border-blue-300 dark:hover:border-blue-600"
-            onClick={() => setIsProfileModalOpen(true)}
+            onClick={() => {
+              console.log('🔥 CloserCard - Avatar clicked:', { 
+                closerName: closer.name, 
+                closerUid: closer.uid,
+                userRole: user?.role 
+              });
+              setIsProfileModalOpen(true);
+            }}
           >
             <AvatarImage src={avatarSrc} alt={closer.name || "User"} data-ai-hint={avatarDataAiHint} />
             <AvatarFallback className="font-bold text-xs bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-800 dark:to-blue-900 text-blue-900 dark:text-blue-100">
@@ -121,7 +136,16 @@ export default function CloserCard({
             {assignedLeadName ? (
               <div 
                 className={`flex items-center text-xs mt-1 ${onLeadClick ? 'cursor-pointer hover:text-blue-600 dark:hover:text-blue-200 transition-colors' : ''} text-blue-700 dark:text-blue-300`}
-                onClick={onLeadClick}
+                onClick={() => {
+                  if (onLeadClick) {
+                    console.log('🔥 CloserCard - Lead assignment clicked:', { 
+                      closerName: closer.name, 
+                      leadName: assignedLeadName,
+                      userRole: user?.role 
+                    });
+                    onLeadClick();
+                  }
+                }}
                 role={onLeadClick ? "button" : undefined}
                 tabIndex={onLeadClick ? 0 : undefined}
                 onKeyDown={onLeadClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onLeadClick(); } } : undefined}
@@ -173,6 +197,12 @@ export default function CloserCard({
                 size="sm" 
                 className="h-6 px-2 text-xs bg-green-600 hover:bg-green-700 text-white border border-green-800"
                 onClick={() => {
+                  console.log('🔥 CloserCard - Accept & Start button clicked:', { 
+                    closerName: closer.name, 
+                    leadStatus: currentLeadStatus,
+                    leadId: leadId,
+                    userRole: user?.role 
+                  });
                   // Skip directly to in_process for managers
                   onDispositionChange("in_process");
                   toast({
@@ -191,6 +221,12 @@ export default function CloserCard({
                 size="sm" 
                 className="h-6 px-2 text-xs bg-green-600 hover:bg-green-700 text-white border border-green-800"
                 onClick={() => {
+                  console.log('🔥 CloserCard - Accept Job button clicked:', { 
+                    closerName: closer.name, 
+                    leadStatus: currentLeadStatus,
+                    leadId: leadId,
+                    userRole: user?.role 
+                  });
                   // Update lead from scheduled to accepted
                   onDispositionChange("accepted");
                   toast({
@@ -209,6 +245,12 @@ export default function CloserCard({
                 size="sm" 
                 className="h-6 px-2 text-xs bg-blue-600 hover:bg-blue-700 text-white border border-blue-800"
                 onClick={() => {
+                  console.log('🔥 CloserCard - Start Working button clicked:', { 
+                    closerName: closer.name, 
+                    leadStatus: currentLeadStatus,
+                    leadId: leadId,
+                    userRole: user?.role 
+                  });
                   // Update lead from accepted to in_process
                   onDispositionChange("in_process");
                   toast({

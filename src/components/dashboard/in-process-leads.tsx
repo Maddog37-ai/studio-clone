@@ -266,6 +266,15 @@ export default function InProcessLeads() {
 
   // Function to handle lead click with access control and job acceptance
   const handleLeadClick = async (lead: Lead) => {
+    console.log('🔥 InProcessLeads - Lead clicked:', { 
+      leadId: lead.id, 
+      customerName: lead.customerName,
+      leadStatus: lead.status,
+      assignedCloserId: lead.assignedCloserId,
+      userRole: user?.role,
+      userUid: user?.uid 
+    });
+
     // Access control: managers can see all leads, closers can see their own assigned leads or leads they have special permissions for
     const hasSpecialPermissions = user?.role === "closer" && checkSpecialLeadVisibilityPermissions(user.uid);
     const canAccessLead = user?.role === "manager" || user?.role === "admin" || 
@@ -328,6 +337,13 @@ export default function InProcessLeads() {
   };
 
   const handleDispositionChange = async (leadId: string, newStatus: LeadStatus) => {
+    console.log('🔥 InProcessLeads - Disposition change triggered:', { 
+      leadId, 
+      newStatus, 
+      userRole: user?.role,
+      userUid: user?.uid 
+    });
+
     if (!user || (user.role !== "closer" && user.role !== "manager" && user.role !== "admin")) {
       toast({
         title: "Access Denied",
