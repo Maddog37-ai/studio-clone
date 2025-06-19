@@ -1,23 +1,23 @@
 
 "use client";
 
-import {useRouter} from "next/navigation";
 import {useAuth} from "@/hooks/use-auth";
 import LoginForm from "@/components/auth/login-form";
 import {Loader2, Sun} from "lucide-react";
-import {useEffect} from "react";
 
 export default function LoginPage() {
   const {user, loading} = useAuth();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace("/dashboard");
-    }
-  }, [user, loading, router]);
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-14 w-14 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  if (loading || (!loading && user)) {
+  // If user is already logged in, let useAuth handle the redirect
+  if (user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-14 w-14 animate-spin text-primary" />

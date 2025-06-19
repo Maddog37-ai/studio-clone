@@ -30,7 +30,9 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
+    console.log('🔥 Setting up Firebase auth listener');
     const unsubscribeAuth = onAuthStateChanged(auth, async (fbUser) => {
+      console.log('🔥 Firebase auth state changed:', !!fbUser);
       setFirebaseUser(fbUser);
       if (!fbUser) {
         setUser(null);
@@ -38,36 +40,46 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
       }
       // If fbUser exists, the other useEffect will handle fetching AppUser
     });
-    return () => unsubscribeAuth();
+    return () => {
+      console.log('🔥 Cleaning up Firebase auth listener');
+      unsubscribeAuth();
+    };
   }, []);
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
 
     if (firebaseUser) {
+      console.log('👤 Setting up user document listener for:', firebaseUser.uid);
       setLoading(true);
       const userDocRef = doc(db, "users", firebaseUser.uid);
 
       unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap) => {
+        console.log('📄 User document changed, exists:', docSnap.exists());
         if (docSnap.exists()) {
           const appUserData = {uid: firebaseUser.uid, ...docSnap.data()} as AppUser;
           setUser(appUserData);
+          console.log('✅ User set:', appUserData.email, appUserData.role);
         } else {
           // User document not found - expected for new users
+          console.log('❌ User document not found');
           setUser(null);
         }
         setLoading(false);
-      }, () => {
+      }, (error) => {
         // Auth error - set to null and continue
+        console.log('🚨 User document error:', error);
         setUser(null);
         setLoading(false);
       });
     } else {
+      console.log('🚫 No Firebase user, clearing app user');
       setUser(null);
       setLoading(false);
     }
     return () => {
       if (unsubscribeUserDoc) {
+        console.log('🧹 Cleaning up user document listener');
         unsubscribeUserDoc();
       }
     };
@@ -75,13 +87,16 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
 
 
   useEffect(() => {
-    if (!loading && !user && pathname !== "/login") {
-      router.push("/login");
+    // Prevent navigation during initial load or if already loading
+    if (loading) return;
+    
+    // Only redirect if we're certain about the auth state
+    if (!user && pathname !== "/login") {
+      router.replace("/login");
+    } else if (user && pathname === "/login") {
+      router.replace("/dashboard");
     }
-    if (!loading && user && pathname === "/login") {
-      router.push("/dashboard");
-    }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, pathname]);
 
   const logout = async () => {
     setLoading(true);
