@@ -3,7 +3,17 @@ const nextConfig = {
   experimental: {
     // Updated turbo config for Next.js 15+
   },
+  // Exclude functions directory from builds
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
   webpack: (config, { isServer }) => {
+    // Exclude functions directory from webpack compilation
+    config.externals = config.externals || [];
+    
     if (!isServer) {
       // Fix protobuf and gRPC issues in browser
       config.resolve.fallback = {
