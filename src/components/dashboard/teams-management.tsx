@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +42,7 @@ export default function TeamsManagement() {
     isActive: true
   });
 
-  const loadTeams = async () => {
+  const loadTeams = useCallback(async () => {
     try {
       setLoading(true);
       const teamsData = await getAllTeams();
@@ -60,13 +60,13 @@ export default function TeamsManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     if (user?.role === "manager" || user?.role === "admin") {
       loadTeams();
     }
-  }, [user]);
+  }, [user, loadTeams]);
 
   const handleInitializeTeams = async () => {
     try {

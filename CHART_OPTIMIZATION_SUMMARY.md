@@ -8,13 +8,13 @@ This document summarizes all the optimizations made to ensure analytics charts s
 ### 1. `/src/components/analytics/performance-charts.tsx`
 **Optimizations Applied:**
 - ✅ **Container Standardization**: All charts now use `h-[350px] w-full` for consistent sizing
-- ✅ **Proper Margins**: Added `margin={{ top: 20, right: 20, bottom: 60, left: 20 }}` to prevent overflow
+- ✅ **Proper Margins**: Added `margin={{ inset-block-start: 20, inset-inline-end: 20, inset-block-end: 60, inset-inline-start: 20 }}` to prevent overflow
 - ✅ **X-Axis Label Improvements**: 
   - Added angled labels (`angle={-45}, textAnchor="end"`) to prevent text overlap
   - Reduced font size to 11px for better fit
   - Added proper height allocation (`height={60}`)
 - ✅ **Legend Enhancements**: 
-  - Added `wrapperStyle={{ paddingTop: '10px' }}` for proper spacing
+  - Added `wrapperStyle={{ paddinginset-block-start: '10px' }}` for proper spacing
   - Positioned legends at bottom with `verticalAlign="bottom", height={36}`
 - ✅ **Descriptive Chart Titles**: Updated to be more specific and informative
 - ✅ **Enhanced Bar Chart Names**: Include units and context (e.g., "Sit Rate %" vs "Sit Rate")
@@ -37,7 +37,7 @@ This document summarizes all the optimizations made to ensure analytics charts s
   - Added legend positioning with `verticalAlign="bottom" height={36}`
   - Enhanced slice labels with percentage thresholds to avoid overcrowding
 - ✅ **Bar Chart Enhancements**:
-  - Added margins for proper spacing (`margin={{ top: 20, right: 20, bottom: 60, left: 20 }}`)
+  - Added margins for proper spacing (`margin={{ inset-block-start: 20, inset-inline-end: 20, inset-block-end: 60, left: 20 }}`)
   - Implemented angled X-axis labels (`angle={-45}`) to prevent text overlap
   - Enhanced legend labels (e.g., "Sold Leads", "No Sale Leads", "Failed Credit Leads")
   - Added proper tooltip content with comprehensive data display

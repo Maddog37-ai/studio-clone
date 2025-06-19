@@ -96,6 +96,7 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
     } else if (user && pathname === "/login") {
       router.replace("/dashboard");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, pathname]);
 
   const logout = async () => {

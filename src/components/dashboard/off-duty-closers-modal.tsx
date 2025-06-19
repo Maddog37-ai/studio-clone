@@ -89,6 +89,7 @@ export default function ManageClosersModal({isOpen, onClose}: ManageClosersModal
     });
 
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user]);
 
   const handleMoveCloser = async (closerUid: string, direction: "up" | "down") => {
