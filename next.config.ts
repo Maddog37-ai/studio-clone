@@ -1,4 +1,8 @@
 const nextConfig = {
+  output: 'export',
+  distDir: 'out',
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
   experimental: {
     turbo: {
       enabled: false, // ✅ This is the correct format in Next.js 15+

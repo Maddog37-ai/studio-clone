@@ -32,8 +32,8 @@ export default function DashboardHeader() {
       <header className="sticky top-0 z-50 w-full border-b border-border/20 bg-white/95 dark:bg-slate-950/95 dark:card-glass dark:glow-turquoise backdrop-blur-md supports-[backdrop-filter]:bg-white/95 dark:supports-[backdrop-filter]:bg-slate-950/95 shadow-sm">
         <div className="container flex h-16 sm:h-18 max-w-7xl mx-auto items-center px-4 sm:px-6 lg:px-8">
           <Link href="/dashboard" className="mr-6 sm:mr-8 flex items-center space-x-3 text-[#3574F2] dark:text-turquoise group">
-            <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 rounded-xl group-hover:from-[#3574F2]/30 group-hover:to-[#5096F2]/20 dark:group-hover:from-turquoise/30 dark:group-hover:to-cyan/20 transition-all duration-300 shadow-sm dark:glow-turquoise">
-              <GearIcon className="h-6 w-6 sm:h-7 sm:w-7 text-[#3574F2] dark:text-turquoise" />
+            <div className="p-3 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 rounded-xl group-hover:from-[#3574F2]/30 group-hover:to-[#5096F2]/20 dark:group-hover:from-turquoise/30 dark:group-hover:to-cyan/20 transition-all duration-300 shadow-sm dark:glow-turquoise">
+              <GearIcon className="h-24 w-24 sm:h-28 sm:w-28 text-[#3574F2] dark:text-turquoise" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl sm:text-2xl font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan bg-clip-text text-transparent">LeadFlow</span>
