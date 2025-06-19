@@ -1,12 +1,7 @@
 const nextConfig = {
-  // output: 'export', // Temporarily disabled for debugging
-  // distDir: 'out',
-  // trailingSlash: true,
-  // skipTrailingSlashRedirect: true,
+  // Firebase App Hosting configuration (dynamic Next.js app)
   experimental: {
-    turbo: {
-      enabled: false, // ✅ This is the correct format in Next.js 15+
-    },
+    // Updated turbo config for Next.js 15+
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
