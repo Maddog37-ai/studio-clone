@@ -12,7 +12,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "LeadFlow",
-  description: "Solar Sales Lead Management",
+  description: "Solar Sales Lead History",
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },

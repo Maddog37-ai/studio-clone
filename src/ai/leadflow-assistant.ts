@@ -26,7 +26,7 @@ export const leadflowAssistant = ai.defineFlow(
     const { message, context, conversationHistory = [] } = input;
     
     // Build context-aware system prompt
-    const systemPrompt = `You are LeadFlow Assistant, an AI helper for a lead management system.
+    const systemPrompt = `You are LeadFlow Assistant, an AI helper for a lead history system.
 
 User Context:
 - Role: ${context.userRole}
@@ -35,7 +35,7 @@ User Context:
 - Recent Activity: ${context.recentActivity || 'None'}
 
 You help users with:
-1. Lead management guidance
+1. Lead history guidance
 2. Best practices for ${context.userRole}s
 3. System navigation help
 4. Team coordination advice

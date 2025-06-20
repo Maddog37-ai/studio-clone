@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Settings, BarChart3, ClipboardList, Wrench } from "lucide-react";
 import TeamUserManagement from "./team-user-management";
-import LeadManagementSpreadsheet from "./lead-management-spreadsheet";
+import LeadHistorySpreadsheet from "./lead-history-spreadsheet";
 import FixTeamsButton from "./fix-teams-button";
 import AnalyticsDashboard from "./analytics-dashboard";
 
@@ -48,11 +48,11 @@ export default function ManagerToolsModal({
                 <span className="sm:hidden">Team</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="lead-management" 
+                value="lead-history" 
                 className="flex items-center data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-md rounded-md transition-all duration-200"
               >
                 <ClipboardList className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Lead Management</span>
+                <span className="hidden sm:inline">Lead History</span>
                 <span className="sm:hidden">Leads</span>
               </TabsTrigger>
               <TabsTrigger 
@@ -77,8 +77,8 @@ export default function ManagerToolsModal({
               <TeamUserManagement />
             </TabsContent>
             
-            <TabsContent value="lead-management" className="mt-6">
-              <LeadManagementSpreadsheet />
+            <TabsContent value="lead-history" className="mt-6">
+              <LeadHistorySpreadsheet />
             </TabsContent>
             
             <TabsContent value="analytics" className="mt-6">

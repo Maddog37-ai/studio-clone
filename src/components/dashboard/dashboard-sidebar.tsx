@@ -106,7 +106,7 @@ function DashboardSidebarContent() {
               <span className="text-lg font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan bg-clip-text text-transparent">
                 LeadFlow
               </span>
-              <span className="text-xs text-muted-foreground">Lead Management</span>
+              <span className="text-xs text-muted-foreground">Lead History</span>
             </div>
           </div>
         </SidebarHeader>
@@ -145,9 +145,9 @@ function DashboardSidebarContent() {
                   <>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/lead-management" className="flex items-center space-x-3">
+                        <Link href="/dashboard/lead-history" className="flex items-center space-x-3">
                           <ClipboardList className="h-5 w-5" />
-                          <span>Lead Management</span>
+                          <span>Lead History</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -178,9 +178,9 @@ function DashboardSidebarContent() {
 
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/lead-management" className="flex items-center space-x-3 ml-4">
+                        <Link href="/dashboard/lead-history" className="flex items-center space-x-3 ml-4">
                           <ClipboardList className="h-4 w-4" />
-                          <span>Lead Management</span>
+                          <span>Lead History</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -354,7 +354,7 @@ export default function DashboardSidebar({ children }: { children?: React.ReactN
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">
                   {pathname === "/dashboard" ? "Dashboard" :
-                   pathname === "/dashboard/lead-management" ? "Lead Management" :
+                   pathname === "/dashboard/lead-history" ? "Lead History" :
                    pathname === "/dashboard/analytics" ? "Analytics" :
                    pathname === "/dashboard/performance-analytics" ? "Analytics" :
                    pathname === "/dashboard/profile" ? "Profile" :

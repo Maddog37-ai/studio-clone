@@ -194,7 +194,7 @@ Your LeadFlow app already has an excellent push notification foundation! This do
 
 ## Summary
 
-Your LeadFlow app already has an excellent foundation for push notifications! The current system handles the core lead management workflow perfectly. The recommended enhancements focus on:
+Your LeadFlow app already has an excellent foundation for push notifications! The current system handles the core lead history workflow perfectly. The recommended enhancements focus on:
 
 1. **Team collaboration** - Better visibility into team status and performance
 2. **Proactive management** - Alerts before problems become critical

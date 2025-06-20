@@ -37,7 +37,7 @@ export default function DashboardHeader() {
             </div>
             <div className="flex flex-col">
               <span className="text-xl sm:text-2xl font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan bg-clip-text text-transparent">LeadFlow</span>
-              <span className="text-xs text-muted-foreground hidden sm:block">Lead Management System</span>
+              <span className="text-xs text-muted-foreground hidden sm:block">Lead History System</span>
             </div>
           </Link>
           

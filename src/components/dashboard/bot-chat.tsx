@@ -39,7 +39,7 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
     if (isOpen && messages.length === 0 && user) {
       const welcomeMessage: Message = {
         id: 'welcome',
-        content: `Greetings, ${user.displayName || 'mortal'}! ☀️ I am Ra, the Sun God and guardian of your LeadFlow realm. My divine wisdom shall guide you through lead management, illuminate best practices, and navigate the sacred paths of your system. What knowledge do you seek from the eternal light?`,
+        content: `Greetings, ${user.displayName || 'mortal'}! ☀️ I am Ra, the Sun God and guardian of your LeadFlow realm. My divine wisdom shall guide you through lead history, illuminate best practices, and navigate the sacred paths of your system. What knowledge do you seek from the eternal light?`,
         isBot: true,
         timestamp: new Date(),
       };

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateChatChannelOnTeamUpdate = exports.initializeChatChannelsOnTeamCreate = exports.cleanupOldChatMessages = exports.updateAdminRoles = exports.generateAnalyticsReport = exports.getDetailedAnalytics = exports.updateUserRole = exports.inviteUser = exports.leadflowBot = exports.selfAssignLead = exports.processAppointmentReminders = exports.scheduleAppointmentReminder = exports.handleLeadDispositionUpdate = exports.getTeamStats = exports.acceptJob = exports.manualAssignLead = exports.handleCloserStatusChange = exports.assignLeadOnCreate = void 0;
+exports.updateChatChannelOnTeamUpdate = exports.initializeChatChannelsOnTeamCreate = exports.cleanupOldChatMessages = exports.updateAdminRoles = exports.generateAnalyticsReport = exports.getDetailedAnalytics = exports.updateUserRole = exports.inviteUser = exports.selfAssignLead = exports.processAppointmentReminders = exports.scheduleAppointmentReminder = exports.handleLeadDispositionUpdate = exports.getTeamStats = exports.acceptJob = exports.manualAssignLead = exports.handleCloserStatusChange = exports.assignLeadOnCreate = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 // Initialize Firebase Admin
@@ -866,98 +866,6 @@ exports.selfAssignLead = functions.https.onCall(async (data, context) => {
             throw error;
         }
         throw new functions.https.HttpsError("internal", "Internal server error");
-    }
-});
-// LeadFlow Assistant Bot
-exports.leadflowBot = functions.https.onCall(async (data, context) => {
-    // Check if user is authenticated
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "Must be authenticated to use bot");
-    }
-    const { message, conversationId, teamId } = data;
-    if (!message || !teamId) {
-        throw new functions.https.HttpsError("invalid-argument", "Message and teamId are required");
-    }
-    try {
-        const userId = context.auth.uid;
-        // Get user data for context
-        const userDoc = await db.collection("users").doc(userId).get();
-        if (!userDoc.exists) {
-            throw new functions.https.HttpsError("not-found", "User not found");
-        }
-        const userData = userDoc.data();
-        // Get conversation history if conversationId provided
-        let conversationHistory = [];
-        if (conversationId) {
-            const historySnapshot = await db
-                .collection("botConversations")
-                .doc(conversationId)
-                .collection("messages")
-                .orderBy("timestamp", "desc")
-                .limit(10)
-                .get();
-            conversationHistory = historySnapshot.docs.map(doc => ({
-                role: doc.data().isBot ? 'assistant' : 'user',
-                content: doc.data().content,
-                timestamp: doc.data().timestamp.toISOString(),
-            })).reverse();
-        }
-        // Get user's current lead count
-        const leadsSnapshot = await db
-            .collection("leads")
-            .where("teamId", "==", teamId)
-            .where("closerId", "==", userId)
-            .where("status", "in", ["pending", "scheduled", "contacted"])
-            .get();
-        // Prepare context for AI
-        const aiContext = {
-            userRole: (userData === null || userData === void 0 ? void 0 : userData.role) || 'closer',
-            teamId,
-            leadCount: leadsSnapshot.size,
-            recentActivity: "Recent leads assigned", // Could be enhanced with actual activity
-        };
-        // Call AI assistant (import the flow directly)
-        const { callLeadflowAssistant } = await Promise.resolve().then(() => require('./ai-assistant'));
-        const response = await callLeadflowAssistant({
-            message,
-            context: aiContext,
-            conversationHistory,
-        });
-        // Store conversation
-        const conversationRef = conversationId
-            ? db.collection("botConversations").doc(conversationId)
-            : db.collection("botConversations").doc();
-        const batch = db.batch();
-        // Create or update conversation document
-        batch.set(conversationRef, {
-            userId,
-            teamId,
-            lastMessage: message,
-            lastResponse: response,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
-        // Add user message
-        batch.set(conversationRef.collection("messages").doc(), {
-            content: message,
-            isBot: false,
-            userId,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        // Add bot response
-        batch.set(conversationRef.collection("messages").doc(), {
-            content: response,
-            isBot: true,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        await batch.commit();
-        return {
-            response,
-            conversationId: conversationRef.id,
-        };
-    }
-    catch (error) {
-        functions.logger.error("Bot error:", error);
-        throw new functions.https.HttpsError("internal", "Failed to process bot request");
     }
 });
 /**

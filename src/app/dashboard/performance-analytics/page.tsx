@@ -10,13 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, MessageSquare, TrendingUp, BarChart3, Users, Target, Send, Loader2, Sparkles, ChartBar, PieChart, Activity } from "lucide-react";
-import { getFunctions, httpsCallable } from "firebase/functions";
-
-// Initialize Firebase Functions
-const functions = getFunctions();
-
-// Create a reference to the Cloud Function
-const askSalesData = httpsCallable(functions, 'askSalesData');
+import { callLocalAIAssistant } from "@/lib/local-ai-assistant";
 
 interface ChatMessage {
   id: string;
@@ -123,11 +117,15 @@ export default function PerformanceAnalyticsPage() {
         )
       );
 
-      // Call the Firebase Cloud Function
-      const result = await askSalesData({ question });
-      
-      // Handle the response
-      const response = result.data as string;
+      // Call the local AI assistant
+      const response = await callLocalAIAssistant({
+        message: question,
+        context: {
+          userRole: (user?.role === 'admin' ? 'manager' : user?.role) as 'setter' | 'closer' | 'manager' || 'closer',
+          teamId: user?.teamId || 'default',
+          leadCount: 0
+        }
+      });
       
       // Add bot response
       const botMessage: ChatMessage = {
@@ -145,7 +143,7 @@ export default function PerformanceAnalyticsPage() {
       // Add error message
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: `I'm sorry, I encountered an error processing your request. ${error instanceof Error ? error.message : 'Please try again.'}`,
+        content: `☀️ The cosmic energies are momentarily disrupted! Please try your query again, and the solar wisdom shall illuminate your path.`,
         isBot: true,
         timestamp: new Date()
       };

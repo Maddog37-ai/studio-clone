@@ -11,7 +11,7 @@ const responsePatterns = [
     },
     {
         keywords: ['help', 'assist', 'guide'],
-        response: (context) => `The sacred wisdom reveals many paths, mortal one. As a ${context.userRole}, you may seek guidance on:\n\n🌟 Lead management and assignment\n🌟 Best practices for your role\n🌟 System navigation\n🌟 Team coordination\n🌟 Performance optimization\n\nSpeak your specific need, and the solar energy shall guide you!`
+        response: (context) => `The sacred wisdom reveals many paths, mortal one. As a ${context.userRole}, you may seek guidance on:\n\n🌟 Lead history and assignment\n🌟 Best practices for your role\n🌟 System navigation\n🌟 Team coordination\n🌟 Performance optimization\n\nSpeak your specific need, and the solar energy shall guide you!`
     },
     {
         keywords: ['leads', 'assignment', 'assign'],
@@ -23,7 +23,7 @@ const responsePatterns = [
                 return `By the eternal light, skilled closer! Your current burden shows ${context.leadCount || 0} souls awaiting guidance. Remember:\n\n• Accept leads promptly when assigned\n• Follow up within the sacred timeframes\n• Document all interactions thoroughly\n• Update lead status as you progress\n\nThe sun's energy flows through your closing abilities!`;
             }
             else {
-                return `Wise manager, the burden of leadership rests upon your shoulders! For lead management:\n\n• Monitor team performance metrics\n• Ensure balanced lead distribution\n• Review and optimize assignment strategies\n• Support both setters and closers\n\nThe divine light illuminates all team activities under your watch.`;
+                return `Wise manager, the burden of leadership rests upon your shoulders! For lead history:\n\n• Monitor team performance metrics\n• Review lead distribution patterns\n• Analyze assignment strategies\n• Support both setters and closers\n\nThe divine light illuminates all team activities under your watch.`;
             }
         }
     },
@@ -642,7 +642,7 @@ async function processLeadflowAssistant(input) {
         }
     }
     // Default response for unmatched queries
-    return `☀️ Greetings, devoted ${context.userRole}! The cosmic winds have carried your message to me, though its meaning requires divine interpretation.\n\nI can illuminate paths regarding:\n• Lead management and assignments\n• Performance metrics and analytics\n• Team communication and coordination\n• System navigation and best practices\n• Live closer rankings from Google Sheets\n• Setter performance and conversion rates\n• Solar energy production data\n• Individual closer/setter performance lookup\n\nSpeak more specifically of your needs, and the solar wisdom shall guide you accordingly!`;
+    return `☀️ Greetings, devoted ${context.userRole}! The cosmic winds have carried your message to me, though its meaning requires divine interpretation.\n\nI can illuminate paths regarding:\n• Lead history and assignments\n• Performance metrics and analytics\n• Team communication and coordination\n• System navigation and best practices\n• Live closer rankings from Google Sheets\n• Setter performance and conversion rates\n• Solar energy production data\n• Individual closer/setter performance lookup\n\nSpeak more specifically of your needs, and the solar wisdom shall guide you accordingly!`;
 }
 // Export the main function
 async function callLeadflowAssistant(input) {

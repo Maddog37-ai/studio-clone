@@ -34,7 +34,7 @@ export default function AnalyticsPage() {
           Team Analytics
         </h1>
         <p className="text-muted-foreground mt-2">
-          Comprehensive insights into your team's performance and lead management.
+          Comprehensive insights into your team's performance and lead history.
         </p>
       </div>
       

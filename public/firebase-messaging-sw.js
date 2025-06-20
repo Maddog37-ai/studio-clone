@@ -159,7 +159,7 @@ self.addEventListener('notificationclick', (event) => {
       // Could trigger auto-assignment logic here
       break;
     case 'verify':
-      url = '/dashboard/lead-management';
+      url = '/dashboard/lead-history';
       break;
     case 'reply':
     case 'chat':

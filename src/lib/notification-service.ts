@@ -221,7 +221,7 @@ export const LeadNotifications = {
       tag: 'verification-reminder',
       data: {
         type: 'verification_reminder',
-        actionUrl: '/dashboard/lead-management'
+        actionUrl: '/dashboard/lead-history'
       }
     });
   },
@@ -318,7 +318,7 @@ export const scheduleNotification = (
   setTimeout(notificationFn, delay);
 };
 
-// Example usage in your lead management code:
+// Example usage in your lead history code:
 /*
 // When creating a new lead:
 await LeadNotifications.newLead(newLead, assignedUserId);
