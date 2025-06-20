@@ -299,7 +299,6 @@ export default function LeadManagementPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <CardTitle className="text-2xl sm:text-3xl font-bold font-headline flex items-center">
               <Filter className="mr-2 sm:mr-3 h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              Lead History
             </CardTitle>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-sm">

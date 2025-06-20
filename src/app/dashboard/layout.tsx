@@ -1,4 +1,4 @@
-          "use client";
+"use client";
 
 import React from "react";
 import DashboardSidebar from "@/components/dashboard/dashboard-sidebar";
@@ -8,5 +8,7 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  return <DashboardSidebar>{children}</DashboardSidebar>;
+  return (
+    <DashboardSidebar>{children}</DashboardSidebar>
+  );
 }

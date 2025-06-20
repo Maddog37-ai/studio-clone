@@ -16,14 +16,12 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.svg', sizes: '32x32', type: 'image/svg+xml' },
     ],
     apple: [
-      { url: '/icon-192x192.png', sizes: '180x180', type: 'image/png' },
-      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
     ],
-    shortcut: '/icon.svg',
+    shortcut: '/favicon.svg',
   },
 };
 
@@ -40,7 +38,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         
         {/* MS Tile Icons */}
-        <meta name="msapplication-TileImage" content="/icon-192x192.png" />
+        <meta name="msapplication-TileImage" content="/icon.svg" />
         <meta name="msapplication-TileColor" content="#3B82F6" />
       </head>
       <body className={`${inter.className} font-body antialiased`}>

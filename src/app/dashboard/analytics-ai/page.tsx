@@ -1,359 +1,136 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Brain, Sparkles, Sun, Crown } from "lucide-react";
+import BotChat from "@/components/dashboard/bot-chat";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, MessageSquare, TrendingUp, BarChart3, Users, Target, Send, Loader2, Sparkles, ChartBar, PieChart, Activity } from "lucide-react";
-import { callLocalAIAssistant } from "@/lib/local-ai-assistant";
-
-// Initialize Firebase Functions
-// Local AI assistant for analytics queries
-
-interface ChatMessage {
-  id: string;
-  content: string;
-  isBot: boolean;
-  timestamp: Date;
-  status?: 'sending' | 'sent' | 'error';
-}
-
-interface QuickAction {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  query: string;
-  category: 'performance' | 'trends' | 'team';
-}
-
-const quickActions: QuickAction[] = [
-  {
-    icon: <TrendingUp className="h-5 w-5" />,
-    title: "Weekly Performance",
-    description: "Get this week's sales performance summary",
-    query: "Show me this week's sales performance compared to last week",
-    category: 'performance'
-  },
-  {
-    icon: <Users className="h-5 w-5" />,
-    title: "Top Performers",
-    description: "Who are our best closers this month?",
-    query: "Who are the top 5 performing closers this month?",
-    category: 'team'
-  },
-  {
-    icon: <BarChart3 className="h-5 w-5" />,
-    title: "Conversion Rates",
-    description: "Analyze lead conversion by source",
-    query: "What are our conversion rates by lead source?",
-    category: 'performance'
-  },
-  {
-    icon: <Target className="h-5 w-5" />,
-    title: "Pipeline Analysis",
-    description: "Review current pipeline status",
-    query: "Analyze our current sales pipeline and forecast",
-    category: 'trends'
-  },
-  {
-    icon: <PieChart className="h-5 w-5" />,
-    title: "Team Distribution",
-    description: "How are leads distributed across teams?",
-    query: "Show me how leads are distributed across our teams",
-    category: 'team'
-  },
-  {
-    icon: <Activity className="h-5 w-5" />,
-    title: "Daily Metrics",
-    description: "Today's key performance indicators",
-    query: "What are today's key metrics and how do they compare to our goals?",
-    category: 'performance'
-  }
-];
 
 export default function AnalyticsAIPage() {
-  const { user } = useAuth();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      content: "Hi! I'm your AI sales analytics assistant. I can help you analyze performance data, track trends, and answer questions about your sales metrics. What would you like to know?",
-      isBot: true,
-      timestamp: new Date()
-    }
-  ]);
-  const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-
-  const handleSendMessage = async (messageText?: string) => {
-    const question = messageText || inputValue.trim();
-    
-    if (!question) {
-      return;
-    }
-
-    // Add user message
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: question,
-      isBot: false,
-      timestamp: new Date(),
-      status: 'sending'
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue("");
-    setIsLoading(true);
-
-    try {
-      // Update user message status
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === userMessage.id 
-            ? { ...msg, status: 'sent' }
-            : msg
-        )
-      );
-
-      // Call the local AI assistant
-      const response = await callLocalAIAssistant({
-        message: question,
-        context: {
-          userRole: 'manager',
-          teamId: 'analytics-team'
-        }
-      });
-      
-      // Add bot response
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: response,
-        isBot: true,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, botMessage]);
-
-    } catch (error) {
-      console.error('Error calling AI assistant:', error);
-      
-      // Add error message
-      const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: `I'm sorry, I encountered an error processing your request. ${error instanceof Error ? error.message : 'Please try again.'}`,
-        isBot: true,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-      
-      // Update user message status to error
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === userMessage.id 
-            ? { ...msg, status: 'error' }
-            : msg
-        )
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const filteredQuickActions = selectedCategory === "all" 
-    ? quickActions 
-    : quickActions.filter(action => action.category === selectedCategory);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl">
-              <Brain className="h-8 w-8 text-white" />
-            </div>
-            Analytics AI Assistant
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Get instant insights and answers about your sales performance
+          <h1 className="text-3xl font-bold tracking-tight">Analytics AI Assistant</h1>
+          <p className="text-muted-foreground">
+            Powered by Ra - Your divine guide to sales insights
           </p>
         </div>
-        <Badge variant="secondary" className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4" />
-          AI Powered
-        </Badge>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions Sidebar */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <ChartBar className="h-5 w-5" />
-                Quick Insights
-              </CardTitle>
-              <CardDescription>
-                Click any question to get instant analytics
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Category Filter */}
-              <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                  <TabsTrigger value="performance" className="text-xs">Performance</TabsTrigger>
-                  <TabsTrigger value="trends" className="text-xs">Trends</TabsTrigger>
-                  <TabsTrigger value="team" className="text-xs">Team</TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              {/* Quick Action Buttons */}
-              <div className="space-y-2">
-                {filteredQuickActions.map((action, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    className="w-full h-auto p-4 justify-start text-left hover:bg-muted/50"
-                    onClick={() => handleSendMessage(action.query)}
-                    disabled={isLoading}
-                  >
-                    <div className="flex items-start gap-3 w-full">
-                      <div className="bg-primary/10 p-2 rounded-lg flex-shrink-0">
-                        {action.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm">{action.title}</div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {action.description}
-                        </div>
-                      </div>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Chat Interface */}
-        <div className="lg:col-span-2">
-          <Card className="h-[600px] flex flex-col">
-            <CardHeader className="flex-shrink-0">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                AI Chat Assistant
-              </CardTitle>
-              <CardDescription>
-                Ask me anything about your sales data and analytics
-              </CardDescription>
-            </CardHeader>
-            
-            {/* Messages Area */}
-            <CardContent className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${
-                      message.isBot ? 'justify-start' : 'justify-end'
-                    }`}
-                  >
-                    {message.isBot && (
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                          AI
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    
-                    <div
-                      className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                        message.isBot
-                          ? 'bg-muted text-foreground'
-                          : 'bg-primary text-primary-foreground'
-                      }`}
-                    >
-                      <div className="text-sm whitespace-pre-wrap">
-                        {message.content}
-                      </div>
-                      <div className="text-xs opacity-70 mt-1 flex items-center gap-1">
-                        {message.timestamp.toLocaleTimeString()}
-                        {message.status === 'sending' && (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        )}
-                        {message.status === 'error' && (
-                          <span className="text-red-400">Failed</span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {!message.isBot && (
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.avatarUrl || undefined} />
-                        <AvatarFallback>
-                          {user?.displayName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-                ))}
-                
-                {isLoading && (
-                  <div className="flex gap-3 justify-start">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                        AI
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="bg-muted rounded-lg px-4 py-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Analyzing your data...
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {/* Input Area */}
-              <div className="flex gap-2 border-t pt-4">
-                <Input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask about sales performance, trends, team metrics..."
-                  className="flex-1"
-                  disabled={isLoading}
-                />
-                <Button
-                  onClick={() => handleSendMessage()}
-                  disabled={isLoading || !inputValue.trim()}
-                  size="icon"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex items-center gap-2">
+          <Sun className="h-6 w-6 text-amber-600 dark:text-turquoise animate-pulse" />
+          <Crown className="h-4 w-4 text-amber-700 dark:text-cyan" />
         </div>
       </div>
+
+      {/* Main AI Assistant Card */}
+      <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-800 border-2 border-amber-200 dark:border-turquoise/30 dark:card-glass dark:glow-turquoise">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="relative">
+              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-200 to-orange-300 dark:from-turquoise/20 dark:to-cyan/30 flex items-center justify-center border-4 border-amber-300 dark:border-turquoise/50 shadow-lg dark:glow-turquoise">
+                <Sun className="h-10 w-10 text-amber-700 dark:text-turquoise" />
+              </div>
+              <Crown className="h-6 w-6 text-amber-700 dark:text-cyan absolute -top-2 -right-2" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl text-amber-900 dark:text-turquoise">
+            Ra - Sun God of LeadFlow
+          </CardTitle>
+          <p className="text-amber-700 dark:text-gray-300">
+            Your divine analytics assistant, ready to illuminate sales insights with cosmic wisdom
+          </p>
+        </CardHeader>
+        <CardContent className="text-center space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="p-4 bg-white/20 dark:bg-slate-800/30 rounded-lg">
+              <Brain className="h-8 w-8 text-amber-600 dark:text-turquoise mx-auto mb-2" />
+              <h3 className="font-semibold text-amber-800 dark:text-turquoise">Smart Analytics</h3>
+              <p className="text-amber-600 dark:text-gray-400">AI-powered insights from your sales data</p>
+            </div>
+            <div className="p-4 bg-white/20 dark:bg-slate-800/30 rounded-lg">
+              <Sparkles className="h-8 w-8 text-amber-600 dark:text-turquoise mx-auto mb-2" />
+              <h3 className="font-semibold text-amber-800 dark:text-turquoise">Data Visualization</h3>
+              <p className="text-amber-600 dark:text-gray-400">Dynamic charts and graphs on demand</p>
+            </div>
+            <div className="p-4 bg-white/20 dark:bg-slate-800/30 rounded-lg">
+              <Sun className="h-8 w-8 text-amber-600 dark:text-turquoise mx-auto mb-2" />
+              <h3 className="font-semibold text-amber-800 dark:text-turquoise">Divine Guidance</h3>
+              <p className="text-amber-600 dark:text-gray-400">Strategic recommendations from Ra</p>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={() => setIsChatOpen(true)}
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 dark:from-turquoise/80 dark:to-cyan/80 dark:hover:from-turquoise dark:hover:to-cyan text-white dark:text-slate-900 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 dark:glow-cyan"
+          >
+            <Sun className="mr-2 h-5 w-5" />
+            Consult with Ra
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Additional Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-amber-600 dark:text-turquoise" />
+              What Ra Can Help With
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-amber-500 rounded-full"></div>
+                Top performer analysis and rankings
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-amber-500 rounded-full"></div>
+                Revenue and system size breakdowns
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-amber-500 rounded-full"></div>
+                Team performance comparisons
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-amber-500 rounded-full"></div>
+                Custom charts and visualizations
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-amber-500 rounded-full"></div>
+                Strategic sales insights
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-amber-600 dark:text-turquoise" />
+              Example Questions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <ul className="space-y-2 text-sm">
+              <li className="italic text-muted-foreground">"Show me the top 5 closers by revenue"</li>
+              <li className="italic text-muted-foreground">"Create a chart of system sizes by team"</li>
+              <li className="italic text-muted-foreground">"How is Richard performing this month?"</li>
+              <li className="italic text-muted-foreground">"Compare Dynasty Vendetta vs TakeoverPros"</li>
+              <li className="italic text-muted-foreground">"What's our average deal size?"</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Ra Chat Dialog */}
+      <BotChat 
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
     </div>
   );
 }

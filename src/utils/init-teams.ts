@@ -10,6 +10,7 @@ export interface Team {
   id: string;
   name: string;
   description: string;
+  regionId: string;
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;
@@ -29,6 +30,7 @@ const DEFAULT_TEAMS: Omit<Team, "createdAt" | "updatedAt">[] = [
     id: "empire",
     name: "Empire",
     description: "Elite sales team for enterprise-level opportunities",
+    regionId: "default",
     isActive: true,
     settings: {
       autoAssignment: true,

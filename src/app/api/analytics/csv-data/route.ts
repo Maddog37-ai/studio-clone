@@ -12,10 +12,16 @@ interface CloserData {
 // Function to fetch and parse Google Sheets CSV data
 async function fetchCloserDataFromCSV(): Promise<CloserData[]> {
   try {
+    const csvUrl = process.env.GOOGLE_SHEETS_CSV_URL
+    
+    if (!csvUrl) {
+      throw new Error('Google Sheets CSV URL not configured in environment variables')
+    }
+    
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
     
-    const response = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vS1JbDgrzjZrpCmTLDtv44N3-NMvdc_bf15JvNErW3Qpxaj3DgCQlYfn5cDwZGH3RuD5yIWQm5SV0DN/pub?output=csv", {
+    const response = await fetch(csvUrl, {
       method: 'GET',
       headers: { 'Accept': 'text/csv' },
       signal: controller.signal

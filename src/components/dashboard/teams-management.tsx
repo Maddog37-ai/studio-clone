@@ -39,6 +39,7 @@ export default function TeamsManagement() {
   const [newTeam, setNewTeam] = useState({
     name: "",
     description: "",
+    regionId: "default", // Default region
     isActive: true
   });
 
@@ -103,12 +104,13 @@ export default function TeamsManagement() {
       await createTeam({
         name: newTeam.name.trim(),
         description: newTeam.description.trim(),
+        regionId: newTeam.regionId,
         isActive: newTeam.isActive
       });
       
       await loadTeams();
       setIsCreateModalOpen(false);
-      setNewTeam({ name: "", description: "", isActive: true });
+      setNewTeam({ name: "", description: "", regionId: "default", isActive: true });
       
       toast({
         title: "Team Created",

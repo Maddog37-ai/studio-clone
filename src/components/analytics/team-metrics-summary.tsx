@@ -60,19 +60,19 @@ export function TeamMetricsSummary({ teamMetrics, loading }: TeamMetricsSummaryP
       color: "text-blue-600"
     },
     {
-      title: "Canceled Lead Rate",
+      title: "Scheduled Appointments That Close %",
       value: `${teamMetrics.canceledLeadRate.toFixed(1)}%`,
       icon: Activity,
       color: "text-red-600"
     },
     {
-      title: "Sameday Sits That Close %",
+      title: "Sameday Close %",
       value: `${teamMetrics.samedaySitCloseRate.toFixed(1)}%`,
       icon: TrendingUp,
       color: "text-orange-600"
     },
     {
-      title: "Scheduled Appointments That Close %",
+      title: "Failed Credits %",
       value: `${teamMetrics.scheduledAppointmentCloseRate.toFixed(1)}%`,
       icon: Target,
       color: "text-purple-600"

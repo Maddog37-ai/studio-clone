@@ -12,6 +12,7 @@ import {
   updateDoc,
   writeBatch,
   getDocs,
+  getDoc,
   Timestamp
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -91,50 +92,153 @@ export class ChatService {
     });
   }
 
-  // Get chat channels for a user
-  static listenToUserChannels(
+  // Get chat channels for a user - ensures both regional and team chats are available
+  static async listenToUserChannels(
     userId: string,
     userTeamId: string,
     callback: (channels: ChatChannel[]) => void
-  ): () => void {
+  ): Promise<() => void> {
+    // First, get the user's team to find their region
+    const teamRef = doc(db, "teams", userTeamId);
+    const teamSnap = await getDoc(teamRef);
+    const teamData = teamSnap.exists() ? teamSnap.data() : null;
+    const userRegionId = teamData?.regionId;
+    const teamName = teamData?.name || "Unknown Team";
+
+    if (!userRegionId) {
+      console.warn("User team has no regionId, using default region");
+    }
+
+    // Get region info
+    const regionRef = doc(db, "regions", userRegionId || "default");
+    const regionSnap = await getDoc(regionRef);
+    const regionData = regionSnap.exists() ? regionSnap.data() : null;
+    const regionName = regionData?.name || "Default Region";
+
     // Get all active channels
     const channelsQuery = query(
       collection(db, "chatChannels"),
       where("isActive", "==", true)
     );
 
-    return onSnapshot(channelsQuery, (snapshot) => {
+    return onSnapshot(channelsQuery, async (snapshot) => {
       const allChannels: ChatChannel[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       })) as ChatChannel[];
 
-      // Filter channels user has access to - only Team chats (no region chat)
-      const userChannels = allChannels.filter(channel => {
-        if (channel.type === "team") {
-          return channel.teamId === userTeamId; // Only team members can access team chat
+      // Find user's specific channels
+      let regionalChannel = allChannels.find(channel => 
+        channel.type === "region" && channel.regionId === (userRegionId || "default")
+      );
+      
+      let teamChannel = allChannels.find(channel => 
+        channel.type === "team" && channel.teamId === userTeamId
+      );
+
+      // Create missing channels if they don't exist
+      const batch = writeBatch(db);
+      let needsBatchCommit = false;
+
+      if (!regionalChannel) {
+        const regionChannelId = `region_${userRegionId || "default"}`;
+        const regionChannelRef = doc(db, "chatChannels", regionChannelId);
+        batch.set(regionChannelRef, {
+          id: regionChannelId,
+          name: `${regionName} Regional Chat`,
+          type: "region",
+          regionId: userRegionId || "default",
+          memberCount: 0,
+          isActive: true,
+          lastMessageTimestamp: serverTimestamp(),
+        });
+        
+        regionalChannel = {
+          id: regionChannelId,
+          name: `${regionName} Regional Chat`,
+          type: "region" as const,
+          regionId: userRegionId || "default",
+          memberCount: 0,
+          isActive: true,
+        };
+        needsBatchCommit = true;
+      }
+
+      if (!teamChannel) {
+        const teamChannelId = `team_${userTeamId}`;
+        const teamChannelRef = doc(db, "chatChannels", teamChannelId);
+        batch.set(teamChannelRef, {
+          id: teamChannelId,
+          name: `${teamName} Team Chat`,
+          type: "team",
+          teamId: userTeamId,
+          regionId: userRegionId || "default",
+          memberCount: 0,
+          isActive: true,
+          lastMessageTimestamp: serverTimestamp(),
+        });
+        
+        teamChannel = {
+          id: teamChannelId,
+          name: `${teamName} Team Chat`,
+          type: "team" as const,
+          teamId: userTeamId,
+          regionId: userRegionId || "default",
+          memberCount: 0,
+          isActive: true,
+        };
+        needsBatchCommit = true;
+      }
+
+      // Commit new channels if needed
+      if (needsBatchCommit) {
+        try {
+          await batch.commit();
+        } catch (error) {
+          console.error("Error creating missing chat channels:", error);
         }
-        // Exclude region chat - only show team chats
-        return false;
-      });
+      }
+
+      // Always return exactly 2 channels: Regional Chat first, then Team Chat
+      const userChannels: ChatChannel[] = [regionalChannel, teamChannel].filter(Boolean);
 
       callback(userChannels);
     });
   }
 
-  // Initialize chat channels
-  static async initializeChannels(teams: Array<{id: string, name: string, isActive: boolean}>): Promise<void> {
+  // Initialize chat channels for both regions and teams
+  static async initializeChannels(
+    regions: Array<{id: string, name: string, isActive: boolean}>,
+    teams: Array<{id: string, name: string, regionId: string, isActive: boolean}>
+  ): Promise<void> {
     const batch = writeBatch(db);
 
-    // Create team channels only (no region channel)
+    // Create regional channels
+    for (const region of regions) {
+      if (region.isActive) {
+        const regionChannelRef = doc(db, "chatChannels", `region_${region.id}`);
+        batch.set(regionChannelRef, {
+          id: `region_${region.id}`,
+          name: `${region.name} Regional Chat`,
+          type: "region",
+          regionId: region.id,
+          memberCount: 0,
+          isActive: true,
+          lastMessageTimestamp: serverTimestamp(),
+        });
+      }
+    }
+
+    // Create team channels
     for (const team of teams) {
       if (team.isActive) {
-        const teamChannelRef = doc(db, "chatChannels", team.id);
+        const teamChannelRef = doc(db, "chatChannels", `team_${team.id}`);
         batch.set(teamChannelRef, {
-          id: team.id,
+          id: `team_${team.id}`,
           name: `${team.name} Team Chat`,
           type: "team",
           teamId: team.id,
+          regionId: team.regionId,
           memberCount: 0,
           isActive: true,
           lastMessageTimestamp: serverTimestamp(),

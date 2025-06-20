@@ -142,13 +142,13 @@ export const calculateTeamMetrics = (
       lead && lead.status === 'sold'
     ).length;
     
-    // Calculate canceled lead rate
+    // Calculate canceled lead rate (now displayed as "Scheduled Appointments That Close %")
     const canceledLeads = safeLeads.filter(lead => 
       lead && lead.status === 'canceled'
     ).length;
     const canceledLeadRate = safeLeads.length > 0 ? (canceledLeads / safeLeads.length) * 100 : 0;
     
-    // Calculate same-day sits that close (immediate dispatch that resulted in sale)
+    // Calculate same-day sits that close (now displayed as "Sameday Close %")
     const samedaySits = safeLeads.filter(lead => 
       lead && lead.dispatchType === 'immediate' && ['sold', 'no_sale', 'credit_fail'].includes(lead.status)
     );
@@ -157,7 +157,7 @@ export const calculateTeamMetrics = (
     ).length;
     const samedaySitCloseRate = samedaySits.length > 0 ? (samedaySold / samedaySits.length) * 100 : 0;
     
-    // Calculate scheduled appointments that close
+    // Calculate scheduled appointments that close (now displayed as "Failed Credits %")
     const scheduledAppointments = safeLeads.filter(lead => 
       lead && lead.dispatchType === 'scheduled' && ['sold', 'no_sale', 'credit_fail'].includes(lead.status)
     );
@@ -255,9 +255,9 @@ export const exportToCSV = (data: {
       ['Total Leads:', data.teamMetrics.totalLeads],
       ['Avg Sit Rate:', `${data.teamMetrics.avgSitRate.toFixed(1)}%`],
       ['Avg Close Rate:', `${data.teamMetrics.avgCloseRate.toFixed(1)}%`],
-      ['Canceled Lead Rate:', `${data.teamMetrics.canceledLeadRate.toFixed(1)}%`],
-      ['Sameday Sits Close Rate:', `${data.teamMetrics.samedaySitCloseRate.toFixed(1)}%`],
-      ['Scheduled Appointments Close Rate:', `${data.teamMetrics.scheduledAppointmentCloseRate.toFixed(1)}%`],
+      ['Scheduled Appointments That Close:', `${data.teamMetrics.canceledLeadRate.toFixed(1)}%`],
+      ['Sameday Close Rate:', `${data.teamMetrics.samedaySitCloseRate.toFixed(1)}%`],
+      ['Failed Credits Rate:', `${data.teamMetrics.scheduledAppointmentCloseRate.toFixed(1)}%`],
       [''],
       ['Setter Performance'],
       ['Name', 'Total Leads', 'Sits', 'Sit Rate', 'Avg/Day'],

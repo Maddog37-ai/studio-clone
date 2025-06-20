@@ -22,7 +22,8 @@ import {
   User,
   Smile,
   Paperclip,
-  X
+  X,
+  Globe
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -236,7 +237,7 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
     
     const initializeChannels = async () => {
       try {
-        const unsubscribe = ChatService.listenToUserChannels(
+        const unsubscribe = await ChatService.listenToUserChannels(
           user.uid,
           user.teamId,
           (userChannels) => {
@@ -456,8 +457,10 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
   };
 
   const getChannelIcon = (channel: ChatChannel) => {
-    // Only team chats are supported now
-    return <MessageCircle className="h-4 w-4" />;
+    if (channel.type === "region") {
+      return <Globe className="h-4 w-4 text-blue-500" />;
+    }
+    return <MessageCircle className="h-4 w-4 text-green-500" />;
   };
 
   if (!isOpen) return null;
@@ -471,35 +474,76 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
             <DialogHeader className="p-4 border-b">
               <DialogTitle className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5" />
-                Team Communications
+                Group Conversations
               </DialogTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Regional and team group chats
+              </p>
             </DialogHeader>
             
             <ScrollArea className="flex-1">
-              <div className="p-2 space-y-1">
-                {channels.map((channel) => (
-                  <Button
-                    key={channel.id}
-                    variant={activeChannel?.id === channel.id ? "secondary" : "ghost"}
-                    className="w-full justify-start h-auto p-3"
-                    onClick={() => selectChannel(channel)}
-                  >
-                    <div className="flex items-center gap-3 w-full">
-                      {getChannelIcon(channel)}
-                      <div className="flex-1 text-left">
-                        <div className="font-medium text-sm">{channel.name}</div>
-                        {channel.lastMessageContent && (
-                          <div className="text-xs text-muted-foreground truncate">
-                            {channel.lastMessageSender}: {channel.lastMessageContent}
+              <div className="p-3 space-y-3">
+                {channels.length === 0 && (
+                  <div className="text-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Setting up your chats...</p>
+                  </div>
+                )}
+                
+                {channels.map((channel, index) => (
+                  <div key={channel.id} className="space-y-2">
+                    {index === 0 && channels.length > 1 && (
+                      <div className="px-2">
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {channel.type === "region" ? "Regional Chat" : "Team Chat"}
+                        </h4>
+                      </div>
+                    )}
+                    {index === 1 && channel.type === "team" && (
+                      <div className="px-2 pt-2">
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Team Chat
+                        </h4>
+                      </div>
+                    )}
+                    
+                    <Button
+                      variant={activeChannel?.id === channel.id ? "secondary" : "ghost"}
+                      className="w-full justify-start h-auto p-3"
+                      onClick={() => selectChannel(channel)}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        {getChannelIcon(channel)}
+                        <div className="flex-1 text-left">
+                          <div className="font-medium text-sm">{channel.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {channel.type === "region" 
+                              ? "All region members" 
+                              : "Team members only"
+                            }
                           </div>
-                        )}
-                        <div className="text-xs text-muted-foreground">
-                          {channel.memberCount} member{channel.memberCount !== 1 ? 's' : ''}
+                          {channel.lastMessageContent && (
+                            <div className="text-xs text-muted-foreground truncate mt-1 max-w-48">
+                              {channel.lastMessageSender}: {channel.lastMessageContent}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground text-right">
+                          <div>{channel.memberCount || 0}</div>
+                          <div>member{(channel.memberCount || 0) !== 1 ? 's' : ''}</div>
                         </div>
                       </div>
-                    </div>
-                  </Button>
+                    </Button>
+                  </div>
                 ))}
+                
+                {channels.length > 0 && (
+                  <div className="px-2 pt-4 border-t">
+                    <p className="text-xs text-muted-foreground">
+                      💡 Switch between regional and team conversations
+                    </p>
+                  </div>
+                )}
               </div>
             </ScrollArea>
           </div>
@@ -515,7 +559,10 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
                     <div>
                       <h3 className="font-semibold">{activeChannel.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {`${activeChannel.memberCount} member${activeChannel.memberCount !== 1 ? 's' : ''}`}
+                        {activeChannel.type === "region" 
+                          ? "Regional group conversation" 
+                          : "Team group conversation"
+                        } • {activeChannel.memberCount || 0} member{(activeChannel.memberCount || 0) !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
@@ -526,10 +573,17 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
                   <div className="space-y-3 max-w-none">
                     {messages.length === 0 && (
                       <div className="text-center py-8">
-                        <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-lg font-semibold mb-2">Start the conversation</h3>
+                        {activeChannel?.type === "region" ? (
+                          <Globe className="h-12 w-12 mx-auto mb-4 text-blue-500" />
+                        ) : (
+                          <MessageCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                        )}
+                        <h3 className="text-lg font-semibold mb-2">Start the group conversation</h3>
                         <p className="text-muted-foreground">
-                          Send the first message to get the team chat started.
+                          {activeChannel?.type === "region" 
+                            ? "Be the first to message your regional group!" 
+                            : "Be the first to message your team group!"
+                          }
                         </p>
                       </div>
                     )}
@@ -645,9 +699,12 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Select a channel</h3>
-                  <p className="text-muted-foreground">Choose a channel from the sidebar to start chatting.</p>
+                  <div className="flex justify-center gap-4 mb-4">
+                    <Globe className="h-8 w-8 text-blue-500" />
+                    <MessageCircle className="h-8 w-8 text-green-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Select a group conversation</h3>
+                  <p className="text-muted-foreground">Choose between regional or team chat to start messaging.</p>
                 </div>
               </div>
             )}

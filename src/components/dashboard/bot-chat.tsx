@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { callLocalAIAssistant } from "@/lib/local-ai-assistant";
-import { Send, Loader2, User, Sun, Crown } from "lucide-react";
+import { Send, Loader2, User, Sun, Crown, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -17,11 +16,50 @@ interface Message {
   content: string;
   isBot: boolean;
   timestamp: Date;
+  chart?: {
+    type: 'bar' | 'line' | 'pie';
+    data: {
+      labels: string[];
+      datasets: Array<{
+        label: string;
+        data: number[];
+        backgroundColor?: string | string[];
+        borderColor?: string;
+        fill?: boolean;
+      }>;
+    };
+    options: {
+      responsive: boolean;
+      [key: string]: any;
+    };
+  } | null;
 }
 
 interface BotChatProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+// Simple chart renderer component
+function SimpleChart({ chart }: { chart: Message['chart'] }) {
+  if (!chart) return null;
+
+  return (
+    <div className="mt-3 p-3 bg-white/10 dark:bg-slate-900/30 rounded-lg border border-amber-200/50 dark:border-turquoise/30">
+      <div className="flex items-center gap-2 mb-2">
+        <BarChart3 className="h-4 w-4 text-amber-600 dark:text-turquoise" />
+        <span className="text-xs font-medium text-amber-700 dark:text-turquoise">Chart Data</span>
+      </div>
+      <div className="text-xs text-amber-600 dark:text-gray-300">
+        <div className="font-medium mb-1">Labels: {chart.data.labels.join(', ')}</div>
+        {chart.data.datasets.map((dataset, idx) => (
+          <div key={idx} className="mb-1">
+            <span className="font-medium">{dataset.label}:</span> {dataset.data.join(', ')}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function BotChat({ isOpen, onClose }: BotChatProps) {
@@ -39,7 +77,7 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
     if (isOpen && messages.length === 0 && user) {
       const welcomeMessage: Message = {
         id: 'welcome',
-        content: `Greetings, ${user.displayName || 'mortal'}! ☀️ I am Ra, the Sun God and guardian of your LeadFlow realm. My divine wisdom shall guide you through lead history, illuminate best practices, and navigate the sacred paths of your system. What knowledge do you seek from the eternal light?`,
+        content: `Greetings, ${user.displayName || 'mortal'}! ☀️ I am Ra, the Sun God and guardian of your LeadFlow realm. My divine wisdom shall guide you through sales analytics, illuminate performance insights, and navigate the sacred paths of your data. What knowledge do you seek from the eternal light?`,
         isBot: true,
         timestamp: new Date(),
       };
@@ -62,7 +100,10 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
   }, [isOpen]);
 
   const sendMessage = async () => {
-    if (!input.trim() || !user?.teamId || isLoading) return;
+    console.log('🤖 SendMessage called', { input: input.trim(), user, isLoading });
+    if (!input.trim() || isLoading) return;
+
+    console.log('🚀 Sending message to chatbot API...');
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -76,30 +117,48 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
     setIsLoading(true);
 
     try {
-      const response = await callLocalAIAssistant({
-        message: userMessage.content,
-        context: {
-          userRole: (user.role === 'admin' ? 'manager' : user.role) || 'closer',
-          teamId: user.teamId || ''
-        }
+      const response = await fetch('/api/chatbot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userMessage: userMessage.content,
+          context: {
+            userRole: (user?.role === 'admin' ? 'manager' : user?.role) || 'closer',
+            teamId: user?.teamId || 'default'
+          }
+        }),
       });
+
+      console.log('📡 API Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error('Failed to get response from chatbot');
+      }
+
+      const data = await response.json();
+      console.log('✅ API Response data:', data);
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: response,
+        content: data.text || 'I apologize, but I could not process your request.',
         isBot: true,
         timestamp: new Date(),
+        chart: data.chart || null,
       };
 
       setMessages(prev => [...prev, botMessage]);
       
       // Generate conversation ID if we don't have one
       if (!conversationId) {
-        setConversationId(`local_${Date.now()}`);
+        setConversationId(`gemini_${Date.now()}`);
       }
 
-    } catch {
-      // Bot error handling - skip console log
+    } catch (error) {
+      // Log the actual error for debugging
+      console.error('Chatbot error:', error);
+      
       toast({
         title: "Bot Error",
         description: "Failed to get response from LeadFlow Assistant. Please try again.",
@@ -133,7 +192,7 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
     if (user) {
       const welcomeMessage: Message = {
         id: 'welcome-new',
-        content: `The sacred scrolls are cleared! ☀️ I am Ra, ready to bestow my divine guidance upon your LeadFlow journey once more. What wisdom do you seek, ${user.displayName || 'devoted one'}?`,
+        content: `The sacred scrolls are cleared! ☀️ I am Ra, ready to bestow my divine guidance upon your LeadFlow analytics journey once more. What insights do you seek, ${user.displayName || 'devoted one'}?`,
         isBot: true,
         timestamp: new Date(),
       };
@@ -143,14 +202,14 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] h-[600px] flex flex-col p-0 bg-gradient-to-b from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-800 border-2 border-amber-200 dark:border-turquoise/30 dark:card-glass dark:glow-turquoise">
+      <DialogContent className="sm:max-w-[700px] h-[700px] flex flex-col p-0 bg-gradient-to-b from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-800 border-2 border-amber-200 dark:border-turquoise/30 dark:card-glass dark:glow-turquoise">
         <DialogHeader className="px-6 py-4 border-b border-amber-200 dark:border-turquoise/20 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-slate-800/50 dark:to-slate-700/50">
           <DialogTitle className="flex items-center gap-2 text-amber-900 dark:text-turquoise">
             <div className="relative">
               <Sun className="h-6 w-6 text-amber-600 dark:text-turquoise animate-pulse" />
               <Crown className="h-3 w-3 text-amber-700 dark:text-cyan absolute -top-1 -right-1" />
             </div>
-            Ra - Sun God of LeadFlow
+            Ra - Sales Analytics Oracle
           </DialogTitle>
         </DialogHeader>
 
@@ -173,13 +232,17 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
                   
                   <div
                     className={cn(
-                      "max-w-[70%] rounded-lg px-3 py-2 text-sm",
+                      "max-w-[75%] rounded-lg px-3 py-2 text-sm",
                       message.isBot
                         ? "bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-800/70 dark:to-slate-700/70 text-amber-900 dark:text-gray-200 border border-amber-200 dark:border-turquoise/20 shadow-md dark:glow-turquoise"
                         : "bg-gradient-to-br from-blue-500 to-blue-600 dark:from-cyan/80 dark:to-turquoise/80 text-white dark:text-slate-900 shadow-md dark:glow-cyan"
                     )}
                   >
                     <p className="whitespace-pre-wrap">{message.content}</p>
+                    
+                    {/* Render chart if available */}
+                    {message.chart && <SimpleChart chart={message.chart} />}
+                    
                     <div
                       className={cn(
                         "text-xs mt-1 opacity-70",
@@ -209,7 +272,7 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
                   <div className="bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-800/70 dark:to-slate-700/70 rounded-lg px-3 py-2 border border-amber-200 dark:border-turquoise/20 dark:glow-turquoise">
                     <div className="flex items-center gap-2 text-amber-800 dark:text-gray-300">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-xs italic">Ra contemplates...</span>
+                      <span className="text-xs italic">Ra analyzes the cosmic data...</span>
                     </div>
                   </div>
                 </div>
@@ -224,7 +287,7 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Speak your query to the Sun God..."
+                placeholder="Ask about sales data, performance, charts..."
                 disabled={isLoading}
                 className="flex-1 border-amber-200 dark:border-turquoise/30 focus:border-amber-400 dark:focus:border-turquoise focus:ring-amber-200 dark:focus:ring-turquoise/20 dark:bg-slate-800/50 dark:text-gray-200"
               />

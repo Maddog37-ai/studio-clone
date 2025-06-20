@@ -74,8 +74,8 @@ export interface ChatMessage {
   senderName: string;
   senderRole: UserRole;
   senderAvatar?: string; // URL to sender's profile photo
-  chatId: string; // teamId for team chat
-  chatType: "team";
+  chatId: string; // teamId for team chat or regionId for region chat
+  chatType: "team" | "region";
   timestamp: Timestamp;
   editedAt?: Timestamp;
   isDeleted?: boolean;
@@ -91,10 +91,11 @@ export interface ChatMessage {
 }
 
 export interface ChatChannel {
-  id: string; // teamId 
-  name: string; // team name
-  type: "team";
-  teamId: string; // for team chats
+  id: string; // teamId or regionId
+  name: string; // team name or region name
+  type: "team" | "region";
+  teamId?: string; // for team chats
+  regionId?: string; // for region chats
   lastMessageId?: string;
   lastMessageContent?: string;
   lastMessageTimestamp?: Timestamp;

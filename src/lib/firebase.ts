@@ -22,15 +22,15 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
 
-// Connect to emulator in development
-if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-  try {
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    console.log('🔥 Connected to Firestore emulator');
-  } catch (error) {
-    console.log('Firestore emulator already connected or not available');
-  }
-}
+// Connect to emulator in development (commented out for now)
+// if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+//   try {
+//     connectFirestoreEmulator(db, 'localhost', 8080);
+//     console.log('🔥 Connected to Firestore emulator');
+//   } catch (error) {
+//     console.log('Firestore emulator already connected or not available');
+//   }
+// }
 
 // Cloud function calls
 export const acceptJobFunction = httpsCallable(functions, 'acceptJob');

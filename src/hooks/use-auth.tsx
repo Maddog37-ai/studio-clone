@@ -29,6 +29,16 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Add timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      console.log('⏰ Auth loading timeout reached, forcing loading to false');
+      setLoading(false);
+    }, 5000); // 5 second timeout for real Firebase auth
+
+    return () => clearTimeout(timeout);
+  }, [firebaseUser, user]);
+
   useEffect(() => {
     console.log('🔥 Setting up Firebase auth listener');
     const unsubscribeAuth = onAuthStateChanged(auth, async (fbUser) => {

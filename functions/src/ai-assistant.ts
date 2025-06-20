@@ -1,6 +1,11 @@
 // Simple pattern-matching AI assistant (manual implementation)
 // This avoids external AI service dependencies and provides reliable responses
 
+// Configuration - Update these URLs as needed
+const GOOGLE_SHEETS_CONFIG = {
+  CSV_URL: process.env.GOOGLE_SHEETS_CSV_URL || "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1JbDgrzjZrpCmTLDtv44N3-NMvdc_bf15JvNErW3Qpxaj3DgCQlYfn5cDwZGH3RuD5yIWQm5SV0DN/pub?output=csv"
+};
+
 interface LeadAssistantInput {
   message: string;
   context: {
@@ -460,7 +465,7 @@ async function fetchCloserDataFromCSV(): Promise<any[]> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    const response = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vS1JbDgrzjZrpCmTLDtv44N3-NMvdc_bf15JvNErW3Qpxaj3DgCQlYfn5cDwZGH3RuD5yIWQm5SV0DN/pub?output=csv", {
+    const response = await fetch(GOOGLE_SHEETS_CONFIG.CSV_URL, {
       method: 'GET',
       headers: { 'Accept': 'text/csv' },
       signal: controller.signal
@@ -576,7 +581,7 @@ async function getSetterInsightsFromCSV(userRole: string, teamId: string): Promi
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     
-    const response = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vS1JbDgrzjZrpCmTLDtv44N3-NMvdc_bf15JvNErW3Qpxaj3DgCQlYfn5cDwZGH3RuD5yIWQm5SV0DN/pub?output=csv", {
+    const response = await fetch(GOOGLE_SHEETS_CONFIG.CSV_URL, {
       method: 'GET',
       headers: { 'Accept': 'text/csv' },
       signal: controller.signal
