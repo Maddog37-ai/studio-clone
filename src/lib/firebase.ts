@@ -34,7 +34,6 @@ if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
 
 // Cloud function calls
 export const acceptJobFunction = httpsCallable(functions, 'acceptJob');
-export const leadflowBotFunction = httpsCallable(functions, 'leadflowBot');
 export const inviteUserFunction = httpsCallable(functions, 'inviteUser');
 export const updateAdminRolesFunction = httpsCallable(functions, 'updateAdminRoles');
 export const getTeamStatsFunction = httpsCallable(functions, 'getTeamStats');

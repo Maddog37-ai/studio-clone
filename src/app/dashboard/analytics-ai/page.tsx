@@ -9,13 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, MessageSquare, TrendingUp, BarChart3, Users, Target, Send, Loader2, Sparkles, ChartBar, PieChart, Activity } from "lucide-react";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { callLocalAIAssistant } from "@/lib/local-ai-assistant";
 
 // Initialize Firebase Functions
-const functions = getFunctions();
-
-// Create a reference to the Cloud Function
-const askSalesData = httpsCallable(functions, 'askSalesData');
+// Local AI assistant for analytics queries
 
 interface ChatMessage {
   id: string;
@@ -122,11 +119,14 @@ export default function AnalyticsAIPage() {
         )
       );
 
-      // Call the Firebase Cloud Function
-      const result = await askSalesData({ question });
-      
-      // Handle the response
-      const response = result.data as string;
+      // Call the local AI assistant
+      const response = await callLocalAIAssistant({
+        message: question,
+        context: {
+          userRole: 'manager',
+          teamId: 'analytics-team'
+        }
+      });
       
       // Add bot response
       const botMessage: ChatMessage = {

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { leadflowBotFunction } from "@/lib/firebase";
+import { callLocalAIAssistant } from "@/lib/local-ai-assistant";
 import { Send, Loader2, User, Sun, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -76,27 +76,26 @@ export default function BotChat({ isOpen, onClose }: BotChatProps) {
     setIsLoading(true);
 
     try {
-      const result = await leadflowBotFunction({
+      const response = await callLocalAIAssistant({
         message: userMessage.content,
-        conversationId,
-        teamId: user.teamId,
+        context: {
+          userRole: (user.role === 'admin' ? 'manager' : user.role) || 'closer',
+          teamId: user.teamId || ''
+        }
       });
-
-      // Type the response data
-      const responseData = result.data as { response: string; conversationId: string };
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: responseData.response,
+        content: response,
         isBot: true,
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, botMessage]);
       
-      // Store conversation ID for context
-      if (responseData.conversationId && !conversationId) {
-        setConversationId(responseData.conversationId);
+      // Generate conversation ID if we don't have one
+      if (!conversationId) {
+        setConversationId(`local_${Date.now()}`);
       }
 
     } catch {

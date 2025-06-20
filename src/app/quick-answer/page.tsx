@@ -13,10 +13,10 @@ export default function QuickAnswerPage() {
           <div className="bg-blue-50 border border-blue-200 rounded p-4">
             <h2 className="text-xl font-bold mb-2">Investigation Methods Available:</h2>
             <div className="space-y-2">
-              <p>• <a href="/test-auth" className="text-blue-600 underline">Test Authentication Page</a> - Create test data including both team members</p>
-              <p>• <a href="/debug-richard" className="text-blue-600 underline">Debug Richard Page</a> - Comprehensive investigation tool</p>
-              <p>• <a href="/debug-firebase" className="text-blue-600 underline">Firebase Debug Page</a> - Raw database inspection</p>
               <p>• <a href="/dashboard" className="text-blue-600 underline">Dashboard</a> - Main application view</p>
+              <p>• <a href="/dashboard/manage-teams" className="text-blue-600 underline">Manage Teams</a> - View team member assignments</p>
+              <p>• <a href="/dashboard/lead-history" className="text-blue-600 underline">Lead History</a> - Review lead assignments by team</p>
+              <p>• <a href="/login" className="text-blue-600 underline">Login</a> - Authenticate to access team data</p>
             </div>
           </div>
           
@@ -33,10 +33,10 @@ export default function QuickAnswerPage() {
           <div className="bg-green-50 border border-green-200 rounded p-4">
             <h3 className="font-bold mb-2">Recommended Steps:</h3>
             <ol className="list-decimal list-inside space-y-1">
-              <li>Go to <a href="/test-auth" className="text-blue-600 underline">/test-auth</a></li>
-              <li>Create test data (includes Richard Niger & Marcelo Guerra)</li>
-              <li>Login with test credentials</li>
-              <li>Go to <a href="/debug-richard" className="text-blue-600 underline">/debug-richard</a> to see the results</li>
+              <li>Go to <a href="/login" className="text-blue-600 underline">/login</a></li>
+              <li>Authenticate with your team credentials</li>
+              <li>Navigate to <a href="/dashboard/manage-teams" className="text-blue-600 underline">Manage Teams</a></li>
+              <li>Review team member assignments to compare team IDs</li>
             </ol>
           </div>
         </CardContent>

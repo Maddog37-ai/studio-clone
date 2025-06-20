@@ -234,7 +234,7 @@ function DashboardSidebarContent() {
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href="/dashboard/leaderboard" className="flex items-center space-x-3">
-                  <Trophy className="h-5 w-5" />
+                  <Trophy className="h-5 w-5 text-yellow-500" />
                   <span>Leaderboard</span>
                 </Link>
               </SidebarMenuButton>
