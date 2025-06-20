@@ -1680,6 +1680,7 @@ exports.updateAdminRoles = functions.https.onCall(async (data, context) => {
 /**
  * Chat message cleanup function
  * Runs daily to delete messages older than 7 days
+ * Updated for deployment
  */
 exports.cleanupOldChatMessages = functions.pubsub
     .schedule("0 2 * * *") // Run daily at 2 AM

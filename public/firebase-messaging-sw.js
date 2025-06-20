@@ -78,6 +78,39 @@ function getNotificationActions(type) {
         { action: 'view', title: 'View Appointment', icon: '/icon-192x192.png' },
         { action: 'snooze', title: 'Remind in 15 min', icon: '/icon-192x192.png' }
       ];
+    case 'priority_lead':
+      return [
+        { action: 'accept', title: 'Accept Now', icon: '/icon-192x192.png' },
+        { action: 'view', title: 'View Details', icon: '/icon-192x192.png' }
+      ];
+    case 'queue_alert':
+      return [
+        { action: 'view', title: 'View Queue', icon: '/icon-192x192.png' },
+        { action: 'assign', title: 'Auto-Assign', icon: '/icon-192x192.png' }
+      ];
+    case 'verification_reminder':
+      return [
+        { action: 'verify', title: 'Verify Now', icon: '/icon-192x192.png' },
+        { action: 'view', title: 'View Leads', icon: '/icon-192x192.png' }
+      ];
+    case 'chat_mention':
+      return [
+        { action: 'reply', title: 'Reply', icon: '/icon-192x192.png' },
+        { action: 'view', title: 'View Chat', icon: '/icon-192x192.png' }
+      ];
+    case 'overdue_followup':
+      return [
+        { action: 'contact', title: 'Contact Now', icon: '/icon-192x192.png' },
+        { action: 'view', title: 'View Lead', icon: '/icon-192x192.png' }
+      ];
+    case 'team_update':
+    case 'performance_milestone':
+    case 'photo_uploaded':
+    case 'rotation_update':
+    case 'system_alert':
+      return [
+        { action: 'view', title: 'View', icon: '/icon-192x192.png' }
+      ];
     default:
       return [
         { action: 'view', title: 'View', icon: '/icon-192x192.png' }
@@ -113,14 +146,32 @@ self.addEventListener('notificationclick', (event) => {
     case 'accept':
       if (data?.leadId) {
         url = `/dashboard?leadId=${data.leadId}`;
-      } else if (data?.url) {
-        url = data.url;
+      } else if (data?.url || data?.actionUrl) {
+        url = data.url || data.actionUrl;
       }
       break;
     case 'snooze':
       // Handle snooze action - could trigger another notification
       scheduleSnoozeNotification(data);
       return;
+    case 'assign':
+      url = '/dashboard';
+      // Could trigger auto-assignment logic here
+      break;
+    case 'verify':
+      url = '/dashboard/lead-management';
+      break;
+    case 'reply':
+    case 'chat':
+      url = '/dashboard/chat';
+      break;
+    case 'contact':
+      if (data?.leadId) {
+        url = `/dashboard?leadId=${data.leadId}&action=contact`;
+      }
+      break;
+    case 'dismiss':
+      return; // Just close notification
   }
   
   // Open or focus the app

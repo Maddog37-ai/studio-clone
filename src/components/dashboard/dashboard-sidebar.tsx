@@ -14,7 +14,9 @@ import {
   Home,
   BarChart3,
   Settings,
-  Users
+  Users,
+  Trophy,
+  Brain
 } from "lucide-react";
 import AvailabilityToggle from "./availability-toggle";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
@@ -152,9 +154,9 @@ function DashboardSidebarContent() {
 
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/analytics" className="flex items-center space-x-3">
-                          <BarChart3 className="h-5 w-5" />
-                          <span>Performance Analytics</span>
+                        <Link href="/dashboard/performance-analytics" className="flex items-center space-x-3">
+                          <Brain className="h-5 w-5" />
+                          <span>Analytics</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -168,8 +170,8 @@ function DashboardSidebarContent() {
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
                         <div className="flex items-center space-x-3 px-2 py-1">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium text-muted-foreground">Manager Tools</span>
+                          <Users className="h-4 w-4 text-blue-500" />
+                          <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Manager Tools</span>
                         </div>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -194,9 +196,9 @@ function DashboardSidebarContent() {
 
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/analytics" className="flex items-center space-x-3 ml-4">
-                          <BarChart3 className="h-4 w-4" />
-                          <span>Performance Analytics</span>
+                        <Link href="/dashboard/performance-analytics" className="flex items-center space-x-3 ml-4">
+                          <Brain className="h-4 w-4" />
+                          <span>Analytics</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -207,8 +209,8 @@ function DashboardSidebarContent() {
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
                         <div className="flex items-center space-x-3 px-2 py-1">
-                          <Settings className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium text-muted-foreground">Admin Tools</span>
+                          <Settings className="h-4 w-4 text-purple-500" />
+                          <span className="text-sm font-medium text-purple-600 dark:text-purple-400">Admin Tools</span>
                         </div>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -229,6 +231,15 @@ function DashboardSidebarContent() {
             )}
 
             {/* Navigation Items */}
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/dashboard/leaderboard" className="flex items-center space-x-3">
+                  <Trophy className="h-5 w-5" />
+                  <span>Leaderboard</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href="/dashboard/profile" className="flex items-center space-x-3">
@@ -345,9 +356,10 @@ export default function DashboardSidebar({ children }: { children?: React.ReactN
                   {pathname === "/dashboard" ? "Dashboard" :
                    pathname === "/dashboard/lead-management" ? "Lead Management" :
                    pathname === "/dashboard/analytics" ? "Analytics" :
-                   pathname === "/dashboard/performance-analytics" ? "Performance Analytics" :
+                   pathname === "/dashboard/performance-analytics" ? "Analytics" :
                    pathname === "/dashboard/profile" ? "Profile" :
                    pathname === "/dashboard/admin-tools" ? "Admin Tools" :
+                   pathname === "/dashboard/leaderboard" ? "Leaderboard" :
                    pathname === "/dashboard/quick-cleanup" ? "Quick Cleanup" :
                    "Dashboard"}
                 </span>

@@ -81,6 +81,62 @@ export default function NotificationTestPanel({ className }: NotificationTestPan
       body: "Lisa Anderson: Lead was canceled",
       icon: <AlertCircle className="h-4 w-4" />,
       color: "text-red-600"
+    },
+    {
+      type: "Team Update",
+      title: "👥 Team Update", 
+      body: "John Closer is now On Duty",
+      icon: <UserPlus className="h-4 w-4" />,
+      color: "text-blue-600"
+    },
+    {
+      type: "Queue Alert",
+      title: "⚠️ Queue Alert",
+      body: "15 leads waiting for assignment",
+      icon: <AlertCircle className="h-4 w-4" />,
+      color: "text-orange-600"
+    },
+    {
+      type: "Goal Achieved",
+      title: "🎉 Goal Achieved!",
+      body: "Sarah Johnson reached daily goal with 5 sales!",
+      icon: <CheckCircle className="h-4 w-4" />,
+      color: "text-green-600"
+    },
+    {
+      type: "Verification Needed",
+      title: "✅ Verification Needed",
+      body: "3 leads require verification",
+      icon: <AlertCircle className="h-4 w-4" />,
+      color: "text-yellow-600"
+    },
+    {
+      type: "Priority Lead",
+      title: "🚨 Priority Lead!",
+      body: "Robert Wilson - High-value lead assigned",
+      icon: <AlertCircle className="h-4 w-4" />,
+      color: "text-red-600"
+    },
+    {
+      type: "Photos Added",
+      title: "📸 Photos Added",
+      body: "Mike added photos for Emma Davis",
+      icon: <UserPlus className="h-4 w-4" />,
+      color: "text-blue-600"
+    },
+    {
+      type: "Chat Mention",
+      title: "💬 Sarah mentioned you",
+      body: "Can you help with the Johnson lead?",
+      icon: <Bell className="h-4 w-4" />,
+      color: "text-purple-600"
+    },
+    {
+      type: "Overdue Follow-up",
+      title: "⏰ Follow-up Overdue",
+      body: "David Smith - 3 days overdue",
+      icon: <Clock className="h-4 w-4" />,
+      color: "text-red-600"
     }
   ];
 
