@@ -171,7 +171,7 @@
       hsl(var(--background-gradient-from)) 0%, 
       hsl(var(--background-gradient-to)) 100%);
     background-attachment: fixed;
-    min-height: 100vh;
+    min-block-size: 100vh;
     /* Add subtle texture for more visual interest */
     background-size: 100% 100%;
   }
@@ -191,15 +191,17 @@
     background-position: center center, center center, 45% 85%, 45% 85%;
     background-repeat: no-repeat;
     animation: bg-smoke-move 80s infinite ease-in-out, bg-fire-move 10s infinite ease-in-out;
+    position: relative;
+    overflow: hidden;
   }
 
   .premium body::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    inset-block-end: 0;
     background-image: linear-gradient(135deg, #181830, #281835, #183035);
     opacity: 0.9;
     z-index: -1;
@@ -288,11 +290,11 @@
 
   .premium body::before {
     content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    inset-block-end: 0;
     background-image: linear-gradient(135deg, #181830, #281835, #183035);
     opacity: 0.9;
     z-index: -1;

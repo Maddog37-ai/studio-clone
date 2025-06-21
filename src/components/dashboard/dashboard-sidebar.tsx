@@ -100,14 +100,14 @@ function DashboardSidebarContent() {
       <Sidebar className="">
         <SidebarHeader className="border-b border-border/20">
           <div className="flex items-center space-x-3 p-4">
-            <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 rounded-xl shadow-sm">
-              <GearIcon className="h-12 w-12 text-[#3574F2] transition-all duration-300" />
+            <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 premium:from-premium-purple/20 premium:to-premium-teal/10 rounded-xl shadow-sm premium:icon-hover-glow">
+              <GearIcon className="h-12 w-12 text-[#3574F2] dark:text-turquoise premium:text-premium-purple premium:icon-glow-purple premium:icon-pulse transition-all duration-300" />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-              <span className="text-lg font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] bg-clip-text text-transparent">
+              <span className="text-lg font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan premium:from-premium-purple premium:to-premium-teal bg-clip-text text-transparent premium:text-glow">
                 LeadFlow
               </span>
-              <span className="text-xs text-muted-foreground">Lead History</span>
+              <span className="text-xs text-muted-foreground premium:text-muted-foreground">Lead History</span>
             </div>
           </div>
         </SidebarHeader>
@@ -249,20 +249,20 @@ function DashboardSidebarContent() {
             <SidebarMenuItem className="flex-1">
               <SidebarMenuButton asChild>
                 <Link href="/dashboard/profile" className="flex items-center space-x-4 p-4 min-h-[60px] transition-all duration-300">
-                  <Avatar className="h-12 w-12 border-2 border-border shadow-md flex-shrink-0">
+                  <Avatar className="h-12 w-12 border-2 border-border shadow-md flex-shrink-0 premium:border-premium-glow">
                     <AvatarImage 
                       src={user?.avatarUrl || undefined} 
-                      alt={user?.displayName || user?.email || "User"} 
+                      alt={user?.displayName || user?.email || 'User'} 
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 text-[#3574F2] font-semibold text-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 premium:from-premium-purple/20 premium:to-premium-teal/10 text-[#3574F2] dark:text-turquoise premium:text-premium-purple font-semibold text-lg">
                       {getAvatarFallbackText()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col text-sm group-data-[collapsible=icon]:hidden flex-1 min-w-0">
-                    <span className="font-bold text-foreground text-base truncate">
+                    <span className="font-bold text-foreground text-base truncate premium:text-foreground">
                       {user?.displayName || user?.email}
                     </span>
-                    <span className="text-muted-foreground capitalize font-medium truncate">{user?.role}</span>
+                    <span className="text-muted-foreground capitalize font-medium truncate premium:text-muted-foreground">{user?.role}</span>
                   </div>
                 </Link>
               </SidebarMenuButton>
