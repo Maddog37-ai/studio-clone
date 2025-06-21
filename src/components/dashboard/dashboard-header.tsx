@@ -36,8 +36,8 @@ export default function DashboardHeader() {
               <GearIcon className="h-14 w-14 sm:h-20 sm:w-20 premium:text-premium-purple premium:icon-glow-purple premium:icon-pulse transition-all duration-300" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl sm:text-3xl font-extrabold font-headline bg-gradient-to-r from-premium-purple to-premium-teal bg-clip-text text-transparent premium:text-glow tracking-tight leading-tight">LeadFlow</span>
-              <span className="text-xs text-muted-foreground hidden sm:block premium:text-muted-foreground font-medium tracking-wide">Premium Lead Management</span>
+              <span className="text-2xl sm:text-3xl font-extrabold font-headline text-foreground tracking-tight leading-tight">LeadFlow</span>
+              <span className="text-xs text-muted-foreground hidden sm:block font-medium tracking-wide">Premium Lead Management</span>
             </div>
           </Link>
           
