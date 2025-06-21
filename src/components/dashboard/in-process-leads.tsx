@@ -10,7 +10,7 @@ import LeadCard from "./lead-card";
 import CloserCard from "./closer-card";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Activity, Loader2, Ghost} from "lucide-react";
+import { Activity, Loader2, Ghost } from "lucide-react";
 import {ScrollArea} from "@/components/ui/scroll-area";
 
 // Special visibility permissions configuration
@@ -434,15 +434,11 @@ export default function InProcessLeads() {
   return (
     <Card className="h-full flex flex-col bg-white dark:bg-slate-900 shadow-lg hover:shadow-xl transition-all duration-200 border-0 ring-1 ring-slate-200 dark:ring-slate-800">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 px-6 pt-6">
-        <CardTitle className="text-xl sm:text-2xl font-bold font-headline flex items-center text-slate-900 dark:text-slate-100">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
-            <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
-          </div>
+        <CardTitle className="text-xl sm:text-2xl font-bold font-headline flex items-center text-slate-900 dark:text-slate-100 premium:text-premium-purple premium:text-glow">
+          <Activity className="h-6 w-6 mr-3 text-green-500 animate-pulse premium:icon-glow-teal" />
           <div className="flex flex-col">
             <span>In Process Leads</span>
-            <span className="text-sm font-normal text-muted-foreground">
-              Active customer interactions
-            </span>
+            <span className="text-sm font-normal text-muted-foreground premium:text-premium-teal">Active customer interactions</span>
           </div>
         </CardTitle>
         {isLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
@@ -457,8 +453,8 @@ export default function InProcessLeads() {
           </div>
         ) : displayItems.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center py-12">
-            <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full mb-4">
-              <Ghost className="h-8 w-8 text-muted-foreground" />
+            <div className="flex items-center justify-center mb-4" style={{blockSize: 64}}>
+              <Ghost className="h-12 w-12 text-white stroke-2" fill="none" stroke="currentColor" strokeWidth={2} />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">All Quiet</h3>
             <p className="text-muted-foreground text-sm max-w-xs">
