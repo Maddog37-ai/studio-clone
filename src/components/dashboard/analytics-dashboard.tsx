@@ -791,615 +791,143 @@ export default function AnalyticsDashboard() {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              {/* Filters Section moved here */}
-              <div className="flex flex-wrap gap-4 items-center bg-white border border-gray-200 shadow-sm p-4 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Filters:</span>
-                </div>
-                <Select value={dateRange} onValueChange={setDateRange}>
-                  <SelectTrigger className="w-40 bg-white border-gray-200 shadow-sm hover:border-gray-300 focus:border-blue-500">
-                    <SelectValue placeholder="Date Range" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-gray-200 shadow-lg">
-                    <SelectItem value="7d">Last 7 days</SelectItem>
-                    <SelectItem value="30d">Last 30 days</SelectItem>
-                    <SelectItem value="90d">Last 90 days</SelectItem>
-                    <SelectItem value="365d">Last year</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={filterCloser} onValueChange={setFilterCloser}>
-                  <SelectTrigger className="w-48 bg-white border-gray-200 shadow-sm hover:border-gray-300 focus:border-blue-500">
-                    <SelectValue placeholder="All Closers" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-gray-200 shadow-lg">
-                    <SelectItem value="all">All Closers</SelectItem>
-                    {analytics.closers.map(closer => (
-                      <SelectItem key={closer.uid} value={closer.uid}>
-                        {closer.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={exportAnalyticsReport} variant="outline" className="flex items-center gap-2 bg-white border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300">
-                  <Download className="h-4 w-4" />
-                  Export Report
-                </Button>
-              </div>
-              {/* Key Metrics Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="dark:card-glass dark:glow-turquoise dark:border-turquoise/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center">
-                      <Target className="h-8 w-8 text-blue-600 dark:text-turquoise" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-muted-foreground">Total Leads</p>
-                        <p className="text-2xl font-bold">{filteredMetrics.totalLeads}</p>
+              {/* Lead Status Distribution */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PieChartIcon className="h-5 w-5" />
+                    Lead Status Distribution
+                    {filterCloser !== "all" && (
+                      <span className="text-sm font-normal text-muted-foreground">
+                        - {analytics.closers.find(c => c.uid === filterCloser)?.name || "Selected Closer"}
+                      </span>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {statusData.length === 0 ? (
+                    <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                      <div className="text-center">
+                        <PieChartIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>No status data available</p>
+                        <p className="text-sm">
+                          {filterCloser !== "all" 
+                            ? "Selected closer has no leads in this date range" 
+                            : "No leads found in selected date range"
+                          }
+                        </p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="dark:card-glass dark:glow-cyan dark:border-cyan/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center">
-                      <Target className="h-8 w-8 text-green-600 dark:text-cyan" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-muted-foreground">Sit Rate</p>
-                        <p className="text-2xl font-bold">{filteredMetrics.sitRate}%</p>
-                        <p className="text-xs text-muted-foreground">Sold, No Sale, Credit Fail</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="dark:card-glass dark:glow-turquoise dark:border-turquoise/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center">
-                      <Users className="h-8 w-8 text-purple-600 dark:text-turquoise" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-muted-foreground">Avg Closing Rate</p>
-                        <p className="text-2xl font-bold">{avgClosingRatio}%</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="dark:card-glass dark:glow-cyan dark:border-cyan/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center">
-                      <Activity className="h-8 w-8 text-orange-600 dark:text-cyan" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-muted-foreground">On Duty Closers</p>
-                        <p className="text-2xl font-bold">{analytics.teamStats?.onDutyClosers || 0}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Charts Section */}
-              <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-6 dark:card-glass dark:glow-turquoise dark:border-turquoise/20">
-                  <TabsTrigger value="overview" className="dark:text-turquoise data-[state=active]:dark:glow-cyan">Overview</TabsTrigger>
-                  <TabsTrigger value="setters" className="dark:text-turquoise data-[state=active]:dark:glow-cyan">Setter Quality</TabsTrigger>
-                  <TabsTrigger value="closers" className="dark:text-turquoise data-[state=active]:dark:glow-cyan">Closer Performance</TabsTrigger>
-                  <TabsTrigger value="dispatch" className="dark:text-turquoise data-[state=active]:dark:glow-cyan">Dispatch Analysis</TabsTrigger>
-                  <TabsTrigger value="trends">Trends</TabsTrigger>
-                  <TabsTrigger value="individual">Individual Metrics</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="overview" className="space-y-6">
-                  {/* Lead Status Distribution */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <PieChartIcon className="h-5 w-5" />
-                        Lead Status Distribution
-                        {filterCloser !== "all" && (
-                          <span className="text-sm font-normal text-muted-foreground">
-                            - {analytics.closers.find(c => c.uid === filterCloser)?.name || "Selected Closer"}
-                          </span>
-                        )}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {statusData.length === 0 ? (
-                        <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                          <div className="text-center">
-                            <PieChartIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p>No status data available</p>
-                            <p className="text-sm">
-                              {filterCloser !== "all" 
-                                ? "Selected closer has no leads in this date range" 
-                                : "No leads found in selected date range"
-                              }
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <ChartContainer config={chartConfig} className="h-[350px] w-full">
-                          <PieChart margin={{ top: 20, right: 20, bottom: 40, left: 20 }}>
-                            <ChartTooltip 
-                              content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                  const data = payload[0].payload;
-                                  const total = statusData.reduce((sum, item) => sum + item.count, 0);
-                                  const percentage = total > 0 ? ((data.count / total) * 100).toFixed(1) : "0";
-                                  return (
-                                    <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                                      <p className="font-medium">{data.status}</p>
-                                      <p className="text-sm">Count: {data.count}</p>
-                                      <p className="text-sm">Percentage: {percentage}%</p>
-                                    </div>
-                                  );
-                                }
-                                return null;
-                              }}
-                            />
-                            <Pie
-                              data={statusData}
-                              dataKey="count"
-                              nameKey="rawStatus"
-                              cx="50%"
-                              cy="45%"
-                              innerRadius={60}
-                              outerRadius={100}
-                              strokeWidth={2}
-                              label={({ status, count, percent }) => {
-                                // Only show label if slice is larger than 8% to avoid overcrowding
-                                if (percent > 0.08) {
-                                  return `${status}: ${(percent * 100).toFixed(0)}%`;
-                                }
-                                return "";
-                              }}
-                              labelLine={false}
-                              fontSize={11}
-                              fontWeight="bold"
-                            >
-                              {statusData.map((entry, _index) => (
-                                <Cell key={`cell-${_index}`} fill={entry.fill} />
-                              ))}
-                            </Pie>
-                            <ChartLegend 
-                              content={<ChartLegendContent nameKey="rawStatus" />} 
-                              verticalAlign="bottom"
-                              height={36}
-                            />
-                          </PieChart>
-                        </ChartContainer>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Dispatch Type Comparison - Stacked Bar Chart */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BarChart3 className="h-5 w-5" />
-                        Immediate vs Scheduled Lead Volume & Dispositions
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                      <ChartContainer config={chartConfig} className="h-[350px] w-full">
-                        <BarChart data={dispatchComparisonData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="type" 
-                            tick={{ fontSize: 11 }}
-                            height={40}
-                          />
-                          <YAxis tick={{ fontSize: 11 }} />
-                          <ChartTooltip 
-                            content={({ active, payload, label }) => {
-                              if (active && payload && payload.length) {
-                                const data = payload[0].payload;
-                                return (
-                                  <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                                    <p className="font-medium">{label} Dispatch</p>
-                                    <p className="text-sm font-bold">Total Leads: {data.total}</p>
-                                    <div className="mt-2 space-y-1">
-                                      <p className="text-sm text-green-600">Sold: {data.sold}</p>
-                                      <p className="text-sm text-red-600">No Sale: {data.noSale}</p>
-                                      <p className="text-sm text-orange-600">Credit Fail: {data.creditFail}</p>
-                                      <p className="text-sm text-yellow-600">Canceled: {data.canceled}</p>
-                                      {data.other > 0 && <p className="text-sm text-gray-600">Other: {data.other}</p>}
-                                    </div>
-                                    <p className="text-sm font-medium mt-2">Conversion Rate: {data.conversionRate.toFixed(1)}%</p>
-                                  </div>
-                                );
-                              }
-                              return null;
-                            }}
-                          />
-                          {/* Net deals on bottom */}
-                          <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold Leads" />
-                          {/* Canceled/no sales stacked on top */}
-                          <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale Leads" />
-                          <Bar dataKey="creditFail" stackId="a" fill={chartConfig.credit_fail.color} name="Failed Credit Leads" />
-                          <Bar dataKey="canceled" stackId="a" fill={chartConfig.canceled.color} name="Canceled Leads" />
-                          <Bar dataKey="other" stackId="a" fill="#94a3b8" name="Other Status" />
-                          <ChartLegend 
-                            content={<ChartLegendContent />} 
-                            wrapperStyle={{ paddingTop: '10px' }}
-                          />
-                        </BarChart>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="setters" className="space-y-6">
-                  <SetterQualityEnhanced 
-                    leads={analytics.leads}
-                    dateRange={dateRange}
-                    className="w-full"
-                  />
-                </TabsContent>
-
-                <TabsContent value="closers" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Closer Performance Chart */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Closer Performance Overview</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <ChartContainer config={chartConfig} className="h-[400px] w-full">
-                          <BarChart data={closerPerformanceData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="name" 
-                              tick={{ fontSize: 11 }}
-                              interval={0}
-                              angle={-45}
-                              textAnchor="end"
-                              height={60}
-                            />
-                            <YAxis tick={{ fontSize: 11 }} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold Leads" />
-                            <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale Leads" />
-                            <Bar dataKey="failedCredits" stackId="a" fill={chartConfig.credit_fail.color} name="Failed Credit Leads" />
-                            <ChartLegend 
-                              content={<ChartLegendContent />} 
-                              wrapperStyle={{ paddingTop: '10px' }}
-                            />
-                          </BarChart>
-                        </ChartContainer>
-                      </CardContent>
-                    </Card>
-
-                    {/* Closer Sales Pie Chart */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Closer Sales Distribution</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <ChartContainer config={chartConfig} className="h-[400px] w-full">
-                          <PieChart margin={{ top: 20, right: 20, bottom: 40, left: 20 }}>
-                            <ChartTooltip 
-                              content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                  const data = payload[0].payload;
-                                  const label = chartConfig[data.status as keyof typeof chartConfig]?.label || data.status;
-                                  return (
-                                    <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                                      <p className="font-medium">{label}</p>
-                                      <p className="text-sm">Count: {data.count}</p>
-                                    </div>
-                                  );
-                                }
-                                return null;
-                              }}
-                            />
-                            <Pie
-                              data={[
-                                { status: "sold", count: analytics.teamStats?.leadsByStatus.sold || 0, fill: chartConfig.sold.color },
-                                { status: "no_sale", count: analytics.teamStats?.leadsByStatus.no_sale || 0, fill: chartConfig.no_sale.color },
-                                { status: "credit_fail", count: analytics.teamStats?.leadsByStatus.credit_fail || 0, fill: chartConfig.credit_fail.color }
-                              ]}
-                              dataKey="count"
-                              nameKey="status"
-                              cx="50%"
-                              cy="45%"
-                              innerRadius={60}
-                              outerRadius={120}
-                              strokeWidth={2}
-                              label={({ status, count, percent }) => {
-                                // Only show label if slice is larger than 8% to avoid overcrowding
-                                if (percent > 0.08) {
-                                  const label = chartConfig[status as keyof typeof chartConfig]?.label || status;
-                                  return `${label}: ${(percent * 100).toFixed(0)}%`;
-                                }
-                                return "";
-                              }}
-                              labelLine={false}
-                              fontSize={11}
-                              fontWeight="bold"
-                            >
-                              {[
-                                { status: "sold", count: analytics.teamStats?.leadsByStatus.sold || 0, fill: chartConfig.sold.color },
-                                { status: "no_sale", count: analytics.teamStats?.leadsByStatus.no_sale || 0, fill: chartConfig.no_sale.color },
-                                { status: "credit_fail", count: analytics.teamStats?.leadsByStatus.credit_fail || 0, fill: chartConfig.credit_fail.color }
-                              ].map((entry, _index) => (
-                                <Cell key={`cell-${_index}`} fill={entry.fill} />
-                              ))}
-                            </Pie>
-                            <ChartLegend 
-                              content={<ChartLegendContent />} 
-                              verticalAlign="bottom"
-                              height={36}
-                            />
-                          </PieChart>
-                        </ChartContainer>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="dispatch" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Dispatch Performance Comparison */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Dispatch Type Performance Analysis</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-6">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 border rounded-lg">
-                              <h4 className="font-medium text-blue-600">Immediate Dispatch</h4>
-                              <p className="text-2xl font-bold">{dispatchAnalytics.immediate.total}</p>
-                              <p className="text-sm text-muted-foreground">Total Leads</p>
-                              <p className="text-lg font-semibold text-green-600">
-                                {dispatchAnalytics.immediate.conversionRate.toFixed(1)}%
-                              </p>
-                              <p className="text-sm text-muted-foreground">Conversion Rate</p>
-                            </div>
-                            <div className="p-4 border rounded-lg">
-                              <h4 className="font-medium text-purple-600">Scheduled Dispatch</h4>
-                              <p className="text-2xl font-bold">{dispatchAnalytics.scheduled.total}</p>
-                              <p className="text-sm text-muted-foreground">Total Leads</p>
-                              <p className="text-lg font-semibold text-green-600">
-                                {dispatchAnalytics.scheduled.conversionRate.toFixed(1)}%
-                              </p>
-                              <p className="text-sm text-muted-foreground">Conversion Rate</p>
-                            </div>
-                          </div>
-                          
-                          <div className="p-4 bg-muted rounded-lg">
-                            <h5 className="font-medium mb-2">Analysis</h5>
-                            <p className="text-sm text-muted-foreground">
-                              {dispatchAnalytics.immediate.conversionRate > dispatchAnalytics.scheduled.conversionRate
-                                ? "Immediate dispatch leads are performing better with higher conversion rates."
-                                : "Scheduled dispatch leads are showing better conversion performance."
-                              }
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Dispatch Volume Chart */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Dispatch Volume & Success Rate</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ChartContainer config={chartConfig} className="h-[300px]">
-                          <BarChart data={dispatchComparisonData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="type" />
-                            <YAxis yAxisId="left" />
-                            <YAxis yAxisId="right" orientation="right" />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Bar yAxisId="left" dataKey="total" fill={chartConfig.leads.color} />
-                            <Bar yAxisId="left" dataKey="sold" fill={chartConfig.sold.color} />
-                          </BarChart>
-                        </ChartContainer>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="individual" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Individual Closer Metrics</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {closerAnalytics
-                          .filter(closer => filterCloser === "all" || closer.uid === filterCloser)
-                          .sort((a, b) => b.closingRatio - a.closingRatio)
-                          .map((closer) => (
-                          <div key={closer.uid} className="flex items-center justify-between p-6 border rounded-lg">
-                            <div className="flex-1">
-                              <p className="font-medium text-lg">{closer.name}</p>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                                <div>
-                                  <p className="text-sm text-muted-foreground">Total Assigned</p>
-                                  <p className="font-semibold">{closer.totalAssigned}</p>
+                  ) : (
+                    <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                      <PieChart margin={{ top: 20, right: 20, bottom: 40, left: 20 }}>
+                        <ChartTooltip 
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              const total = statusData.reduce((sum, item) => sum + item.count, 0);
+                              const percentage = total > 0 ? ((data.count / total) * 100).toFixed(1) : "0";
+                              return (
+                                <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
+                                  <p className="font-medium">{data.status}</p>
+                                  <p className="text-sm">Count: {data.count}</p>
+                                  <p className="text-sm">Percentage: {percentage}%</p>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-muted-foreground">Sales</p>
-                                  <p className="font-semibold text-green-600">{closer.totalSold}</p>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Pie
+                          data={statusData}
+                          dataKey="count"
+                          nameKey="rawStatus"
+                          cx="50%"
+                          cy="45%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          strokeWidth={2}
+                          label={({ status, count, percent }) => {
+                            // Only show label if slice is larger than 8% to avoid overcrowding
+                            if (percent > 0.08) {
+                              return `${status}: ${(percent * 100).toFixed(0)}%`;
+                            }
+                            return "";
+                          }}
+                          labelLine={false}
+                          fontSize={11}
+                          fontWeight="bold"
+                        >
+                          {statusData.map((entry, _index) => (
+                            <Cell key={`cell-${_index}`} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <ChartLegend 
+                          content={<ChartLegendContent nameKey="rawStatus" />} 
+                          verticalAlign="bottom"
+                          height={36}
+                        />
+                      </PieChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Dispatch Type Comparison - Stacked Bar Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Immediate vs Scheduled Lead Volume & Dispositions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                    <BarChart data={dispatchComparisonData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="type" 
+                        tick={{ fontSize: 11 }}
+                        height={40}
+                      />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <ChartTooltip 
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
+                                <p className="font-medium">{label} Dispatch</p>
+                                <p className="text-sm font-bold">Total Leads: {data.total}</p>
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-sm text-green-600">Sold: {data.sold}</p>
+                                  <p className="text-sm text-red-600">No Sale: {data.noSale}</p>
+                                  <p className="text-sm text-orange-600">Credit Fail: {data.creditFail}</p>
+                                  <p className="text-sm text-yellow-600">Canceled: {data.canceled}</p>
+                                  {data.other > 0 && <p className="text-sm text-gray-600">Other: {data.other}</p>}
                                 </div>
-                                <div>
-                                  <p className="text-sm text-muted-foreground">No Sales</p>
-                                  <p className="font-semibold text-red-600">{closer.totalNoSale}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-muted-foreground">Failed Credits</p>
-                                  <p className="font-semibold text-orange-600">{closer.totalFailedCredits}</p>
-                                </div>
+                                <p className="text-sm font-medium mt-2">Conversion Rate: {data.conversionRate.toFixed(1)}%</p>
                               </div>
-                            </div>
-                            <div className="text-right ml-4">
-                              <p className="text-sm text-muted-foreground">Closing Rate</p>
-                              <p className="text-3xl font-bold text-blue-600">{closer.closingRatio.toFixed(1)}%</p>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Closing Score: {closer.closingPercentage.toFixed(1)}%
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="trends" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Lead Volume Trends */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Lead Volume Trends</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <ChartContainer config={chartConfig} className="h-[350px] w-full">
-                          <LineChart data={generateTrendData()} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="date" 
-                              tick={{ fontSize: 11 }}
-                              interval="preserveStartEnd"
-                              angle={-45}
-                              textAnchor="end"
-                              height={60}
-                            />
-                            <YAxis tick={{ fontSize: 11 }} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Line 
-                              type="monotone" 
-                              dataKey="totalLeads" 
-                              stroke={chartConfig.leads.color} 
-                              strokeWidth={2}
-                              name="Total Leads Count"
-                              dot={{ r: 3 }}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="soldLeads" 
-                              stroke={chartConfig.sold.color} 
-                              strokeWidth={2}
-                              name="Sold Leads Count"
-                              dot={{ r: 3 }}
-                            />
-                            <ChartLegend 
-                              content={<ChartLegendContent />} 
-                              wrapperStyle={{ paddingTop: '10px' }}
-                            />
-                          </LineChart>
-                        </ChartContainer>
-                      </CardContent>
-                    </Card>
-
-                    {/* Conversion Rate Trends */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Conversion Rate Trends</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <ChartContainer config={chartConfig} className="h-[350px] w-full">
-                          <LineChart data={generateTrendData()} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="date" 
-                              tick={{ fontSize: 11 }}
-                              interval="preserveStartEnd"
-                              angle={-45}
-                              textAnchor="end"
-                              height={60}
-                            />
-                            <YAxis tick={{ fontSize: 11 }} />
-                            <ChartTooltip 
-                              content={({ active, payload, label }) => {
-                                if (active && payload && payload.length) {
-                                  const data = payload[0].payload;
-                                  return (
-                                    <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                                      <p className="font-medium">{label}</p>
-                                      <p className="text-sm">Conversion Rate: {data.conversionRate.toFixed(1)}%</p>
-                                      <p className="text-sm">Immediate: {data.immediateConversion.toFixed(1)}%</p>
-                                      <p className="text-sm">Scheduled: {data.scheduledConversion.toFixed(1)}%</p>
-                                    </div>
-                                  );
-                                }
-                                return null;
-                              }}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="conversionRate" 
-                              stroke={chartConfig.assigned.color} 
-                              strokeWidth={2}
-                              name="Overall Conversion Rate"
-                              dot={{ r: 3 }}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="immediateConversion" 
-                              stroke={chartConfig.immediate.color} 
-                              strokeWidth={2}
-                              name="Immediate Dispatch Rate"
-                              dot={{ r: 3 }}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="scheduledConversion" 
-                              stroke={chartConfig.scheduled.color} 
-                              strokeWidth={2}
-                              name="Scheduled"
-                              dot={{ r: 3 }}
-                            />
-                          </LineChart>
-                        </ChartContainer>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Performance Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card>
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">Weekly Growth</p>
-                            <p className="text-2xl font-bold">{calculateWeeklyGrowth()}%</p>
-                          </div>
-                          <TrendingUp className="h-8 w-8 text-green-600" />
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">Best Performing Day</p>
-                            <p className="text-2xl font-bold">{getBestPerformingDay()}</p>
-                          </div>
-                          <Calendar className="h-8 w-8 text-blue-600" />
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">Avg Daily Leads</p>
-                            <p className="text-2xl font-bold">{getAverageDailyLeads()}</p>
-                          </div>
-                          <Target className="h-8 w-8 text-purple-600" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      {/* Net deals on bottom */}
+                      <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold Leads" />
+                      {/* Canceled/no sales stacked on top */}
+                      <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale Leads" />
+                      <Bar dataKey="creditFail" stackId="a" fill={chartConfig.credit_fail.color} name="Failed Credit Leads" />
+                      <Bar dataKey="canceled" stackId="a" fill={chartConfig.canceled.color} name="Canceled Leads" />
+                      <Bar dataKey="other" stackId="a" fill="#94a3b8" name="Other Status" />
+                      <ChartLegend 
+                        content={<ChartLegendContent />} 
+                        wrapperStyle={{ paddingTop: '10px' }}
+                      />
+                    </BarChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="setters" className="space-y-6">

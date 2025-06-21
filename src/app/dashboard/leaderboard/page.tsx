@@ -9,12 +9,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Trophy, TrendingUp, Users, Target, RefreshCw, Award } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 
-// Simplified interfaces
+// Updated interfaces
 interface SetterData {
-  id: string
   displayName: string
-  email: string
-  photoURL?: string
+  email?: string
   totalLeads: number
   qualifiedLeads: number
   conversionRate: number
@@ -65,7 +63,6 @@ export default function LeaderboardPage() {
       // Mock setters data
       const mockSetters: SetterData[] = [
         {
-          id: '1',
           displayName: 'John Doe',
           email: 'john@example.com',
           totalLeads: 45,
@@ -75,7 +72,6 @@ export default function LeaderboardPage() {
           lastActivity: new Date().toISOString()
         },
         {
-          id: '2', 
           displayName: 'Jane Smith',
           email: 'jane@example.com',
           totalLeads: 38,
@@ -141,20 +137,29 @@ export default function LeaderboardPage() {
       setLoading(true)
       setError(null)
 
-      // Try to fetch real data
-      const response = await fetch('/api/analytics/csv-data')
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data: ${response.status}`)
+      // Fetch closers
+      const closersResponse = await fetch('/api/analytics/csv-data')
+      if (!closersResponse.ok) {
+        throw new Error(`Failed to fetch closers: ${closersResponse.status}`)
+      }
+      const closersData = await closersResponse.json()
+      if (!closersData.success) {
+        throw new Error(closersData.error || 'Failed to load closers')
       }
 
-      const data = await response.json()
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to load data')
+      // Fetch setters
+      const settersResponse = await fetch('/api/analytics/setter-data')
+      if (!settersResponse.ok) {
+        throw new Error(`Failed to fetch setters: ${settersResponse.status}`)
+      }
+      const settersData = await settersResponse.json()
+      if (!settersData.success) {
+        throw new Error(settersData.error || 'Failed to load setters')
       }
 
-      setClosers(data.closers || [])
-      setSetters([]) // No real setter data for now
-      setTeamStats([]) // No real team stats for now
+      setClosers(closersData.closers || [])
+      setSetters(settersData.setters || [])
+      setTeamStats([]) // Team stats can be calculated if needed
       setLastUpdated(new Date())
     } catch (error) {
       console.error('Error loading real data:', error)
@@ -301,11 +306,11 @@ export default function LeaderboardPage() {
             <CardContent>
               <div className="space-y-4">
                 {setters.slice(0, 10).map((setter, index) => (
-                  <div key={setter.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={setter.displayName + index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       {getRankBadge(index + 1)}
                       <Avatar>
-                        <AvatarImage src={setter.photoURL} />
+                        {/* No photoURL for real data, fallback to initials */}
                         <AvatarFallback>
                           {setter.displayName.slice(0, 2).toUpperCase()}
                         </AvatarFallback>

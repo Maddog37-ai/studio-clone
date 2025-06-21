@@ -42,9 +42,9 @@ async function fetchCloserDataFromCSV(): Promise<CloserData[]> {
     
     // Parse header to find column indices
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
-    const closerIndex = headers.findIndex(h => h.includes('closer') && !h.includes('division') && !h.includes('region') && !h.includes('team'))
-    const systemSizeIndex = headers.findIndex(h => h.includes('system_size'))
-    const realizationIndex = headers.findIndex(h => h.includes('realization'))
+    const closerIndex = headers.findIndex(h => h === 'closer_name')
+    const systemSizeIndex = headers.findIndex(h => h === 'kw')
+    const realizationIndex = headers.findIndex(h => h === 'realization')
     
     if (closerIndex === -1 || systemSizeIndex === -1 || realizationIndex === -1) {
       throw new Error('Required columns not found in CSV')
@@ -66,9 +66,9 @@ async function fetchCloserDataFromCSV(): Promise<CloserData[]> {
         if (closer && closer.length > 0 && systemSize > 0) {
           closerData.push({
             closer: closer,
-            totalKW: systemSize / 1000, // Convert watts to kilowatts
+            totalKW: systemSize, // Use kW directly
             realizationValue: realization,
-            revenue: systemSize * 3.5 // Estimate $3.50 per watt
+            revenue: systemSize * 3500 // Estimate $3,500 per kW
           })
         }
       } catch (rowError) {

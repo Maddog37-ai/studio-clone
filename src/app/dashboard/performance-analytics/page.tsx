@@ -183,8 +183,8 @@ export default function PerformanceAnalyticsPage() {
           <CardContent className="flex items-center justify-center p-8">
             <div className="text-center">
               <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Analytics Not Available</h2>
-              <p className="text-muted-foreground">Analytics are available for closers and managers only.</p>
+              <h2 className="text-xl font-semibold mb-2">Data Analytics Not Available</h2>
+              <p className="text-muted-foreground">Data Analytics are available for closers and managers only.</p>
             </div>
           </CardContent>
         </Card>
@@ -201,7 +201,7 @@ export default function PerformanceAnalyticsPage() {
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl">
               <Brain className="h-8 w-8 text-white" />
             </div>
-            Analytics
+            Data Analytics
           </h1>
           <p className="text-muted-foreground mt-2">
             Performance dashboards and AI-powered insights
@@ -243,7 +243,7 @@ export default function PerformanceAnalyticsPage() {
                     Quick Insights
                   </CardTitle>
                   <CardDescription>
-                    Click any question to get instant analytics
+                    Click any question to get instant data analytics
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

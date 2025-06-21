@@ -1,4 +1,3 @@
-
 "use client";
 
 import type {Lead} from "@/types";
@@ -20,6 +19,7 @@ import {
   ImageIcon,
   Zap,
   ArrowDown,
+  Ghost,
 } from "lucide-react";
 import {useAuth} from "@/hooks/use-auth";
 import {useState} from "react";
@@ -38,26 +38,26 @@ interface LeadCardProps {
 
 const getStatusIcon = (status: Lead["status"]) => {
   switch (status) {
-  case "in_process":
-    return <Activity className="h-5 w-5 text-blue-500" />;
-  case "accepted":
-    return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-  case "sold":
-    return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-  case "no_sale":
-    return <XCircle className="h-5 w-5 text-red-500" />;
-  case "canceled":
-    return <Ban className="h-5 w-5 text-yellow-500" />;
-  case "rescheduled":
-    return <CalendarClock className="h-5 w-5 text-purple-500" />;
-  case "scheduled":
-    return <CalendarClock className="h-5 w-5 text-blue-500" />;
-  case "credit_fail":
-    return <CreditCard className="h-5 w-5 text-blue-500" />;
-  case "waiting_assignment":
-    return <ClipboardList className="h-5 w-5 text-gray-500" />;
-  default:
-    return <Activity className="h-5 w-5 text-gray-500" />;
+    case "in_process":
+      return <Ghost className="h-4 w-4 text-white stroke-2 premium:icon-glow-white" fill="none" stroke="currentColor" strokeWidth={2} />;
+    case "accepted":
+      return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+    case "sold":
+      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+    case "no_sale":
+      return <XCircle className="h-4 w-4 text-red-500" />;
+    case "canceled":
+      return <Ban className="h-4 w-4 text-yellow-500" />;
+    case "rescheduled":
+      return <CalendarClock className="h-4 w-4 text-purple-500" />;
+    case "scheduled":
+      return <CalendarClock className="h-4 w-4 text-blue-500" />;
+    case "credit_fail":
+      return <CreditCard className="h-4 w-4 text-blue-500" />;
+    case "waiting_assignment":
+      return <ClipboardList className="h-4 w-4 text-gray-500" />;
+    default:
+      return null;
   }
 };
 
