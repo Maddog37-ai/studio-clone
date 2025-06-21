@@ -97,14 +97,14 @@ function DashboardSidebarContent() {
 
   return (
     <>
-      <Sidebar className="dark:card-glass dark:glow-turquoise dark:border-turquoise/20">
-        <SidebarHeader className="border-b border-border/20 dark:border-turquoise/20">
+      <Sidebar className="">
+        <SidebarHeader className="border-b border-border/20">
           <div className="flex items-center space-x-3 p-4">
-            <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 rounded-xl shadow-sm dark:glow-turquoise">
-              <GearIcon className="h-12 w-12 text-[#3574F2] dark:text-turquoise" />
+            <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 rounded-xl shadow-sm">
+              <GearIcon className="h-12 w-12 text-[#3574F2] transition-all duration-300" />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-              <span className="text-lg font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan bg-clip-text text-transparent">
+              <span className="text-lg font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] bg-clip-text text-transparent">
                 LeadFlow
               </span>
               <span className="text-xs text-muted-foreground">Lead History</span>
@@ -116,8 +116,8 @@ function DashboardSidebarContent() {
           <SidebarMenu className="p-2">
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href="/dashboard" className="flex items-center space-x-3">
-                  <Home className="h-5 w-5" />
+                <Link href="/dashboard" className="flex items-center space-x-3 group">
+                  <Home className="h-5 w-5 transition-colors duration-300" />
                   <span>Dashboard</span>
                 </Link>
               </SidebarMenuButton>
@@ -128,9 +128,9 @@ function DashboardSidebarContent() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => setIsCreateLeadModalOpen(true)}
-                  className="bg-gradient-to-r from-[#3574F2] to-[#5096F2] hover:from-[#3574F2]/90 hover:to-[#5096F2]/90 dark:from-turquoise dark:to-cyan dark:hover:from-turquoise/90 dark:hover:to-cyan/90 text-white shadow-lg shadow-[#3574F2]/25 dark:shadow-turquoise/25 hover:shadow-xl hover:shadow-[#3574F2]/30 dark:hover:shadow-turquoise/30 transition-all duration-300 border-0 dark:glow-turquoise"
+                  className="bg-gradient-to-r from-[#3574F2] to-[#5096F2] hover:from-[#3574F2]/90 hover:to-[#5096F2]/90 text-white shadow-lg shadow-[#3574F2]/25 hover:shadow-xl hover:shadow-[#3574F2]/30 transition-all duration-300 border-0 group"
                 >
-                  <PlusCircle className="h-5 w-5" />
+                  <PlusCircle className="h-5 w-5 transition-all duration-300" />
                   <span>Create New Lead</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -139,8 +139,8 @@ function DashboardSidebarContent() {
             {/* Leaderboard */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href="/dashboard/leaderboard" className="flex items-center space-x-3">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
+                <Link href="/dashboard/leaderboard" className="flex items-center space-x-3 group">
+                  <Trophy className="h-5 w-5 text-yellow-500 transition-colors duration-300" />
                   <span>Leaderboard</span>
                 </Link>
               </SidebarMenuButton>
@@ -156,8 +156,8 @@ function DashboardSidebarContent() {
                   <>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/lead-history" className="flex items-center space-x-3">
-                          <ClipboardList className="h-5 w-5" />
+                        <Link href="/dashboard/lead-history" className="flex items-center space-x-3 group">
+                          <ClipboardList className="h-5 w-5 transition-colors duration-300" />
                           <span>Lead History</span>
                         </Link>
                       </SidebarMenuButton>
@@ -165,8 +165,8 @@ function DashboardSidebarContent() {
 
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/performance-analytics" className="flex items-center space-x-3">
-                          <Brain className="h-5 w-5" />
+                        <Link href="/dashboard/performance-analytics" className="flex items-center space-x-3 group">
+                          <Brain className="h-5 w-5 transition-colors duration-300" />
                           <span>Analytics</span>
                         </Link>
                       </SidebarMenuButton>
@@ -181,16 +181,16 @@ function DashboardSidebarContent() {
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
                         <div className="flex items-center space-x-3 px-2 py-1">
-                          <Users className="h-4 w-4 text-blue-500" />
-                          <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Manager Tools</span>
+                          <Users className="h-4 w-4 text-blue-500 transition-colors duration-300" />
+                          <span className="text-sm font-medium text-blue-600">Manager Tools</span>
                         </div>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/lead-history" className="flex items-center space-x-3 ml-4">
-                          <ClipboardList className="h-4 w-4" />
+                        <Link href="/dashboard/lead-history" className="flex items-center space-x-3 ml-4 group">
+                          <ClipboardList className="h-4 w-4 transition-colors duration-300" />
                           <span>Lead History</span>
                         </Link>
                       </SidebarMenuButton>
@@ -198,8 +198,8 @@ function DashboardSidebarContent() {
 
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/manage-teams" className="flex items-center space-x-3 ml-4">
-                          <Users className="h-4 w-4" />
+                        <Link href="/dashboard/manage-teams" className="flex items-center space-x-3 ml-4 group">
+                          <Users className="h-4 w-4 transition-colors duration-300" />
                           <span>Manage Teams</span>
                         </Link>
                       </SidebarMenuButton>
@@ -207,8 +207,8 @@ function DashboardSidebarContent() {
 
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/performance-analytics" className="flex items-center space-x-3 ml-4">
-                          <Brain className="h-4 w-4" />
+                        <Link href="/dashboard/performance-analytics" className="flex items-center space-x-3 ml-4 group">
+                          <Brain className="h-4 w-4 transition-colors duration-300" />
                           <span>Analytics</span>
                         </Link>
                       </SidebarMenuButton>
@@ -219,8 +219,8 @@ function DashboardSidebarContent() {
                     {/* Admin Tools */}
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild>
-                        <Link href="/dashboard/admin-tools" className="flex items-center space-x-3">
-                          <Settings className="h-5 w-5" />
+                        <Link href="/dashboard/admin-tools" className="flex items-center space-x-3 group">
+                          <Settings className="h-5 w-5 transition-colors duration-300" />
                           <span>Admin Tools</span>
                         </Link>
                       </SidebarMenuButton>
@@ -243,18 +243,18 @@ function DashboardSidebarContent() {
           </SidebarMenu>
         </SidebarContent>
 
-        <SidebarFooter className="border-t border-border/20 dark:border-turquoise/20 dark:card-glass p-4 min-h-[180px] flex-shrink-0">
+        <SidebarFooter className="border-t border-border/20 p-4 min-h-[180px] flex-shrink-0">
           <SidebarMenu className="space-y-3 h-full">
             {/* User Profile */}
             <SidebarMenuItem className="flex-1">
               <SidebarMenuButton asChild>
-                <Link href="/dashboard/profile" className="flex items-center space-x-4 p-4 min-h-[60px] dark:card-glass dark:glow-cyan hover:dark:glow-turquoise transition-all duration-300">
-                  <Avatar className="h-12 w-12 border-2 border-border dark:border-turquoise/30 shadow-md dark:glow-turquoise flex-shrink-0">
+                <Link href="/dashboard/profile" className="flex items-center space-x-4 p-4 min-h-[60px] transition-all duration-300">
+                  <Avatar className="h-12 w-12 border-2 border-border shadow-md flex-shrink-0">
                     <AvatarImage 
                       src={user?.avatarUrl || undefined} 
                       alt={user?.displayName || user?.email || "User"} 
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 text-[#3574F2] dark:text-turquoise font-semibold text-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 text-[#3574F2] font-semibold text-lg">
                       {getAvatarFallbackText()}
                     </AvatarFallback>
                   </Avatar>
@@ -272,7 +272,7 @@ function DashboardSidebarContent() {
             <SidebarMenuItem>
               <div className="flex items-center justify-between px-4 py-2 group-data-[collapsible=icon]:hidden">
                 <div className="flex items-center space-x-2">
-                  <Monitor className="h-4 w-4 text-muted-foreground" />
+                  <Monitor className="h-4 w-4 text-muted-foreground transition-colors duration-300" />
                   <span className="text-sm text-muted-foreground">Theme</span>
                 </div>
                 <ThemeToggleButton />
@@ -287,9 +287,9 @@ function DashboardSidebarContent() {
                   size="icon"
                   onClick={logout}
                   aria-label="Logout"
-                  className="h-10 w-10 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                  className="h-10 w-10 hover:bg-red-50 hover:text-red-600 transition-colors duration-300 group"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-5 w-5 transition-all duration-300" />
                 </Button>
               </div>
             </SidebarMenuItem>
@@ -318,9 +318,9 @@ export default function DashboardSidebar({ children }: { children?: React.ReactN
         <DashboardSidebarContent />
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header with sidebar trigger */}
-          <header className="sticky top-0 z-40 w-full border-b border-border/20 bg-white/95 dark:bg-slate-950/95 dark:card-glass dark:glow-turquoise backdrop-blur-md supports-[backdrop-filter]:bg-white/95 dark:supports-[backdrop-filter]:bg-slate-950/95 shadow-sm">
+          <header className="sticky top-0 z-40 w-full border-b border-border/20 bg-white/95 dark:bg-slate-950/95 dark:card-glass dark:glow-turquoise premium:card-glass premium:glow-premium backdrop-blur-md supports-[backdrop-filter]:bg-white/95 dark:supports-[backdrop-filter]:bg-slate-950/95 premium:supports-[backdrop-filter]:bg-transparent shadow-sm">
             <div className="flex h-16 items-center px-4">
-              <SidebarTrigger className="mr-3 dark:text-turquoise dark:hover:bg-slate-800/50 dark:hover:glow-cyan" />
+              <SidebarTrigger className="mr-3 dark:text-turquoise dark:hover:bg-slate-800/50 dark:hover:glow-cyan premium:text-premium-purple premium:hover:bg-premium-glass/50 premium:hover:glow-premium" />
               {/* Team Logo */}
               {user?.teamId === "takeover-pros" && (
                 <div className="flex items-center mr-4">

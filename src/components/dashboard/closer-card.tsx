@@ -102,17 +102,17 @@ export default function CloserCard({
   const avatarDataAiHint = closer.avatarUrl ? undefined : (closer.name?.split(" ")[0]?.toLowerCase() || "person");
 
   return (
-    <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 border-0 hover:scale-[1.02] shadow-slate-400/20 dark:shadow-slate-900/40 bg-gradient-to-r from-blue-100/70 via-white to-blue-100/70 dark:card-glass dark:glow-turquoise dark:from-gray-900 dark:via-blue-950/20 dark:to-gray-900">
+    <Card className="shadow-xl hover:shadow-2xl transition-all duration-300">
       <CardContent className="p-3">
         <div className="flex items-start space-x-2">
           {/* Position indicator */}
           {position && (
-            <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-white text-xs font-bold rounded-full shadow-md bg-gradient-to-br from-blue-600 to-blue-700">
+            <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-white text-xs font-bold rounded-full shadow-lg bg-blue-500">
               {position}
             </div>
           )}
           <Avatar 
-            className="h-10 w-10 border-2 shadow-md flex-shrink-0 cursor-pointer transition-colors border-blue-200 dark:border-blue-700 hover:border-blue-300 dark:hover:border-blue-600"
+            className="h-10 w-10 border-2 shadow-lg flex-shrink-0 cursor-pointer transition-all duration-300 border-slate-200"
             onClick={() => {
               console.log('🔥 CloserCard - Avatar clicked:', { 
                 closerName: closer.name, 
@@ -123,19 +123,19 @@ export default function CloserCard({
             }}
           >
             <AvatarImage src={avatarSrc} alt={closer.name || "User"} data-ai-hint={avatarDataAiHint} />
-            <AvatarFallback className="font-bold text-xs bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-800 dark:to-blue-900 text-blue-900 dark:text-blue-100">
+            <AvatarFallback className="font-bold text-xs bg-blue-100 text-blue-900">
               {closer.name ? closer.name.substring(0, 2).toUpperCase() : "N/A"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0 pr-2">
             <div className="flex items-center gap-1">
-              <p className="text-xs font-bold font-headline text-gray-900 dark:text-gray-100 truncate">
+              <p className="text-xs font-bold font-headline text-gray-900 truncate">
                 {closer.name || "Unnamed Closer"}
               </p>
             </div>
             {assignedLeadName ? (
               <div 
-                className={`flex items-center text-xs mt-1 ${onLeadClick ? 'cursor-pointer hover:text-blue-600 dark:hover:text-blue-200 transition-colors' : ''} text-blue-700 dark:text-blue-300`}
+                className={`flex items-center text-xs mt-1 ${onLeadClick ? 'cursor-pointer hover:text-blue-600 transition-colors' : ''} text-blue-700`}
                 onClick={() => {
                   if (onLeadClick) {
                     console.log('🔥 CloserCard - Lead assignment clicked:', { 
@@ -165,7 +165,7 @@ export default function CloserCard({
                 />
                 <Label
                   htmlFor={`status-toggle-${closer.uid}`}
-                  className={`text-xs font-medium ${currentStatusIsOnDuty ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                  className={`text-xs font-medium ${currentStatusIsOnDuty ? "text-green-700" : "text-red-600"}`}
                 >
                   {isUpdatingStatus ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -175,7 +175,7 @@ export default function CloserCard({
                 </Label>
               </div>
             ) : (
-              <div className={`flex items-center text-xs mt-1 ${currentStatusIsOnDuty ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+              <div className={`flex items-center text-xs mt-1 ${currentStatusIsOnDuty ? "text-green-700" : "text-red-600"}`}>
                 {currentStatusIsOnDuty ? (
                   <UserCheck className="mr-1 h-3 w-3" />
                 ) : (
@@ -190,12 +190,12 @@ export default function CloserCard({
         {/* Right side controls - moved to separate row to prevent overlap */}
         {((isWaitingAssignmentLead || isScheduledLead || isAcceptedLead) && onDispositionChange) || 
          (showMoveControls && onMove && !assignedLeadName) ? (
-          <div className="flex items-center justify-end space-x-1 mt-2 pt-2 border-t border-blue-100 dark:border-blue-800">
+          <div className="flex items-center justify-end space-x-1 mt-2 pt-2 border-t border-slate-200">
             {/* Single Accept button for waiting_assignment and scheduled leads (managers/admins) */}
             {(isWaitingAssignmentLead || isScheduledLead) && (user?.role === "manager" || user?.role === "admin") && onDispositionChange && (
               <Button 
                 size="sm" 
-                className="h-6 px-2 text-xs bg-green-600 hover:bg-green-700 text-white border border-green-800"
+                className="h-6 px-2 text-xs bg-green-500/80 backdrop-blur-sm hover:bg-green-600/90 text-white border border-green-400/30 hover:border-green-300/50 transition-all duration-300"
                 onClick={() => {
                   console.log('🔥 CloserCard - Accept & Start button clicked:', { 
                     closerName: closer.name, 
@@ -219,7 +219,7 @@ export default function CloserCard({
             {isScheduledLead && user?.role === "closer" && onDispositionChange && (
               <Button 
                 size="sm" 
-                className="h-6 px-2 text-xs bg-green-600 hover:bg-green-700 text-white border border-green-800"
+                className="h-6 px-2 text-xs bg-green-500/80 backdrop-blur-sm hover:bg-green-600/90 text-white border border-green-400/30 hover:border-green-300/50 transition-all duration-300"
                 onClick={() => {
                   console.log('🔥 CloserCard - Accept Job button clicked:', { 
                     closerName: closer.name, 
@@ -243,7 +243,7 @@ export default function CloserCard({
             {isAcceptedLead && user?.role === "closer" && onDispositionChange && (
               <Button 
                 size="sm" 
-                className="h-6 px-2 text-xs bg-blue-600 hover:bg-blue-700 text-white border border-blue-800"
+                className="h-6 px-2 text-xs bg-blue-500/80 backdrop-blur-sm hover:bg-blue-600/90 text-white border border-blue-400/30 hover:border-blue-300/50 transition-all duration-300"
                 onClick={() => {
                   console.log('🔥 CloserCard - Start Working button clicked:', { 
                     closerName: closer.name, 

@@ -239,7 +239,7 @@ export default function CloserLineup() {
   // Early return if user is not loaded yet
   if (!user) {
     return (
-      <Card className="h-full flex flex-col bg-white dark:bg-slate-900 shadow-lg hover:shadow-xl transition-all duration-200 border-0 ring-1 ring-slate-200 dark:ring-slate-800 dark:card-glass dark:glow-cyan">
+      <Card className="h-full flex flex-col bg-white shadow-lg hover:shadow-xl transition-all duration-200 border-0 ring-1 ring-slate-200">
         <CardContent className="flex-grow overflow-hidden px-6 pb-6">
           <div className="flex h-full flex-col items-center justify-center text-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -253,17 +253,17 @@ export default function CloserLineup() {
   return (
     <>
       <Card 
-        className="h-full flex flex-col bg-white dark:bg-slate-900 shadow-lg hover:shadow-xl transition-all duration-200 border-0 ring-1 ring-slate-200 dark:ring-slate-800 dark:card-glass dark:glow-cyan"
+        className="h-full flex flex-col bg-white shadow-lg hover:shadow-xl transition-all duration-200 border-0 ring-1 ring-slate-200"
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 px-6 pt-6">
-          <CardTitle className="text-xl sm:text-2xl font-bold font-headline flex items-center text-slate-900 dark:text-slate-100">
+          <CardTitle className="text-xl sm:text-2xl font-bold font-headline flex items-center text-slate-900">
             <div 
-              className={`p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3 ${
-                canManageClosers ? 'cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors' : ''
+              className={`p-2 bg-blue-100 rounded-lg mr-3 ${
+                canManageClosers ? 'cursor-pointer hover:bg-blue-200 transition-colors' : ''
               }`}
               onClick={canManageClosers ? handleCardClick : undefined}
             >
-              <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
+              <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
             </div>
             <div className="flex flex-col">
               <span>Closer Lineup</span>
@@ -279,7 +279,7 @@ export default function CloserLineup() {
       <CardContent className="flex-grow overflow-hidden px-6 pb-6">
         {displayClosers.length === 0 && !isOverallLoading ? (
           <div className="flex h-full flex-col items-center justify-center text-center py-12">
-            <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full mb-4">
+            <div className="p-4 bg-slate-100 rounded-full mb-4">
               <Users className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">{emptyTitle}</h3>
@@ -287,7 +287,7 @@ export default function CloserLineup() {
               {emptyDescription}
             </p>
             {user && !user.teamId && (
-              <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-3 py-1 rounded-md mt-2">
+              <p className="text-xs text-red-600 bg-red-50 px-3 py-1 rounded-md mt-2">
                 Error: User missing team assignment
               </p>
             )}
@@ -301,7 +301,7 @@ export default function CloserLineup() {
                   const isAssigned = assignedLeadCloserIds.has(closer.uid);
                   
                   return (
-                    <div key={closer.uid} className={isCurrentUser ? "ring-2 ring-blue-400 dark:ring-blue-500 rounded-lg" : ""}>
+                    <div key={closer.uid} className={isCurrentUser ? "ring-2 ring-blue-400 rounded-lg" : ""}>
                       <CloserCard
                         closer={closer}
                         allowInteractiveToggle={false}

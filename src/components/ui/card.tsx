@@ -10,15 +10,12 @@ const Card = React.forwardRef<
 >(({className, ...props}, ref) => (
   <div
     ref={ref}
+    data-card="true"
     className={cn(
       // Light mode: Clean white cards with proper shadows and borders
       "rounded-xl border border-slate-200 bg-white text-card-foreground",
       "shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/50",
       "transition-all duration-200 ease-in-out",
-      // Dark mode: Enhanced with blue accent and better shadows
-      "dark:bg-slate-800/95 dark:border-slate-700/50 dark:shadow-lg dark:shadow-slate-900/25",
-      "dark:hover:shadow-xl dark:hover:shadow-slate-900/40",
-      "dark:ring-1 dark:ring-slate-700/50",
       className
     )}
     {...props}
