@@ -8,7 +8,7 @@ import {db} from "@/lib/firebase";
 import {collection, query, where, onSnapshot, orderBy} from "firebase/firestore";
 import CloserCard from "./closer-card";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
-import {Users, Loader2, Activity} from "lucide-react";
+import { Users, Loader2, Activity } from "lucide-react";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import ManageClosersModal from "./off-duty-closers-modal";
 
@@ -257,7 +257,7 @@ export default function CloserLineup() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 px-6 pt-6">
           <CardTitle className="text-xl sm:text-2xl font-bold font-headline flex items-center text-slate-900 dark:text-slate-100 premium:text-premium-purple premium:text-glow">
             <div className={`mr-3 rounded-lg flex items-center justify-center premium:bg-gradient-to-br premium:from-premium-purple/80 premium:to-premium-teal/80 premium:icon-glow-purple`} onClick={canManageClosers ? handleCardClick : undefined}>
-              <Activity className="h-6 w-6 text-green-500 animate-pulse premium:icon-glow-teal" />
+              <Users className="h-6 w-6 text-premium-purple premium:icon-glow-purple" />
             </div>
             <div className="flex flex-col">
               <span>Closer Lineup</span>
