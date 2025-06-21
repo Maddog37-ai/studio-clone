@@ -18,8 +18,8 @@ export function CloserPerformanceTable({
 }: CloserPerformanceTableProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="text-center">
+        <CardTitle className="flex items-center justify-center gap-2">
           <Target className="h-5 w-5" />
           Closer Performance
         </CardTitle>
@@ -29,15 +29,15 @@ export function CloserPerformanceTable({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-2">Closer</th>
-                <th className="text-right p-2">Assigned</th>
-                <th className="text-right p-2">Sold</th>
-                <th className="text-right p-2">Close Rate</th>
-                <th className="text-right p-2">No Sale</th>
-                <th className="text-right p-2">Credit Fail</th>
-                <th className="text-right p-2">Self-Gen</th>
-                <th className="text-right p-2">Conversion</th>
-                <th className="text-right p-2">Avg/Day</th>
+                <th className="text-center p-2">Closer</th>
+                <th className="text-center p-2">Assigned</th>
+                <th className="text-center p-2">Sold</th>
+                <th className="text-center p-2">Close Rate</th>
+                <th className="text-center p-2">No Sale</th>
+                <th className="text-center p-2">Credit Fail</th>
+                <th className="text-center p-2">Self-Gen</th>
+                <th className="text-center p-2">Conversion</th>
+                <th className="text-center p-2">Avg/Day</th>
               </tr>
             </thead>
             <tbody>
@@ -49,14 +49,14 @@ export function CloserPerformanceTable({
                     className="border-b hover:bg-gray-50 cursor-pointer"
                     onClick={() => onCloserSelect(closer.uid)}
                   >
-                    <td className="p-2 font-medium">{closer.name}</td>
-                    <td className="text-right p-2">{closer.totalAssigned}</td>
-                    <td className="text-right p-2">
+                    <td className="p-2 font-medium text-center">{closer.name}</td>
+                    <td className="text-center p-2">{closer.totalAssigned}</td>
+                    <td className="text-center p-2">
                       <span className="text-green-600 font-semibold">
                         {closer.soldCount}
                       </span>
                     </td>
-                    <td className="text-right p-2">
+                    <td className="text-center p-2">
                       <span className={`font-semibold ${
                         closer.closeRate >= 20 ? 'text-green-600' : 
                         closer.closeRate >= 15 ? 'text-yellow-600' : 'text-red-600'
@@ -64,22 +64,22 @@ export function CloserPerformanceTable({
                         {closer.closeRate.toFixed(1)}%
                       </span>
                     </td>
-                    <td className="text-right p-2">
+                    <td className="text-center p-2">
                       <span className="text-red-600">
                         {closer.noSaleCount}
                       </span>
                     </td>
-                    <td className="text-right p-2">
+                    <td className="text-center p-2">
                       <span className="text-orange-600">
                         {closer.failedCreditCount}
                       </span>
                     </td>
-                    <td className="text-right p-2">
+                    <td className="text-center p-2">
                       <span className="text-blue-600">
                         {closer.selfGenCount} ({closer.selfGenRate.toFixed(1)}%)
                       </span>
                     </td>
-                    <td className="text-right p-2">
+                    <td className="text-center p-2">
                       <span className={`font-semibold ${
                         closer.conversionRate >= 25 ? 'text-green-600' : 
                         closer.conversionRate >= 20 ? 'text-yellow-600' : 'text-red-600'
@@ -87,7 +87,7 @@ export function CloserPerformanceTable({
                         {closer.conversionRate.toFixed(1)}%
                       </span>
                     </td>
-                    <td className="text-right p-2">{closer.avgLeadsPerDay.toFixed(1)}</td>
+                    <td className="text-center p-2">{closer.avgLeadsPerDay.toFixed(1)}</td>
                   </tr>
                 ))}
             </tbody>

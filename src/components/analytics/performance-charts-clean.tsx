@@ -55,8 +55,8 @@ export function PerformanceCharts({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Setter Performance Chart */}
       <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
             Setter Performance Rates
           </CardTitle>
@@ -87,8 +87,8 @@ export function PerformanceCharts({
 
       {/* Closer Performance Chart */}
       <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
             Closer Performance Rates
           </CardTitle>
@@ -119,8 +119,8 @@ export function PerformanceCharts({
 
       {/* Lead Distribution Pie Chart */}
       <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
             Lead Distribution
           </CardTitle>
@@ -155,8 +155,8 @@ export function PerformanceCharts({
 
       {/* Trend Analysis Line Chart */}
       <Card className="lg:col-span-2">
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
             Performance Trends
           </CardTitle>

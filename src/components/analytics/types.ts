@@ -41,6 +41,8 @@ export interface TeamMetrics {
   canceledLeadRate: number;
   samedaySitCloseRate: number;
   scheduledAppointmentCloseRate: number;
+  samedaySitRate: number;
+  scheduledSitRate: number;
   leadsToday: number;
   leadsThisWeek: number;
   leadsThisMonth: number;

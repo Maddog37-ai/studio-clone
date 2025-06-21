@@ -73,6 +73,13 @@ const config: Config = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        premium: {
+          purple: '#BB86FC',
+          teal: '#03DAC6',
+          smoke: 'rgba(40, 40, 60, 0.3)',
+          glass: 'rgba(20, 20, 35, 0.8)',
+          glow: 'rgba(255, 255, 255, 0.18)',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

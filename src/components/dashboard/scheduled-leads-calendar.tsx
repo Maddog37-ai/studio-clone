@@ -91,7 +91,7 @@ export default function ScheduledLeadsCalendar({ scheduledLeads, loading }: Sche
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <Calendar className="h-8 w-8 animate-pulse text-primary mx-auto mb-2" />
+          <Calendar className="h-8 w-8 animate-pulse text-primary mx-auto mb-2 premium:text-premium-teal premium:nav-icon premium:icon-glow-teal premium:icon-pulse" />
           <p className="text-muted-foreground">Loading calendar...</p>
         </div>
       </div>
@@ -107,9 +107,9 @@ export default function ScheduledLeadsCalendar({ scheduledLeads, loading }: Sche
           size="sm"
           onClick={goToPreviousDay}
           disabled={!canGoPrevious}
-          className="h-7 w-7 p-0 sm:h-8 sm:w-8"
+          className="h-7 w-7 p-0 sm:h-8 sm:w-8 premium:hover:bg-premium-glass/50 premium:hover:glow-premium transition-all duration-300"
         >
-          <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+          <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 premium:nav-icon premium:icon-glow-purple" />
         </Button>
         
         <div className="text-center">
@@ -129,9 +129,9 @@ export default function ScheduledLeadsCalendar({ scheduledLeads, loading }: Sche
           size="sm"
           onClick={goToNextDay}
           disabled={!canGoNext}
-          className="h-7 w-7 p-0 sm:h-8 sm:w-8"
+          className="h-7 w-7 p-0 sm:h-8 sm:w-8 premium:hover:bg-premium-glass/50 premium:hover:glow-premium transition-all duration-300"
         >
-          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
+          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 premium:nav-icon premium:icon-glow-purple" />
         </Button>
       </div>
 
@@ -180,7 +180,7 @@ export default function ScheduledLeadsCalendar({ scheduledLeads, loading }: Sche
         {leadsForSelectedDate.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mx-auto mb-2" />
+              <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mx-auto mb-2 premium:text-premium-teal premium:nav-icon premium:icon-glow-teal" />
               <p className="text-sm sm:text-base text-muted-foreground">
                 No appointments for{" "}
                 <span className="hidden sm:inline">{format(selectedDate, "MMM d")}</span>
@@ -194,7 +194,7 @@ export default function ScheduledLeadsCalendar({ scheduledLeads, loading }: Sche
               {leadsForSelectedDate.map(lead => (
                 <div key={lead.id} className="border-l-2 sm:border-l-4 border-primary/20 pl-2 sm:pl-3">
                   <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    <Clock className="h-3 w-3 text-muted-foreground premium:text-premium-teal premium:nav-icon premium:icon-glow-teal" />
                     <span className="text-xs font-medium text-muted-foreground">
                       {lead.scheduledAppointmentTime && 
                         format(lead.scheduledAppointmentTime.toDate(), "h:mm a")

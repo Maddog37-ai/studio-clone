@@ -166,6 +166,18 @@ export const calculateTeamMetrics = (
     ).length;
     const scheduledAppointmentCloseRate = scheduledAppointments.length > 0 ? (scheduledSold / scheduledAppointments.length) * 100 : 0;
     
+    // Calculate sameday sit rate (percentage of immediate leads that actually sit)
+    const samedayLeads = safeLeads.filter(lead => 
+      lead && lead.dispatchType === 'immediate'
+    );
+    const samedaySitRate = samedayLeads.length > 0 ? (samedaySits.length / samedayLeads.length) * 100 : 0;
+    
+    // Calculate scheduled sit rate (percentage of scheduled leads that actually sit)
+    const scheduledLeads = safeLeads.filter(lead => 
+      lead && lead.dispatchType === 'scheduled'
+    );
+    const scheduledSitRate = scheduledLeads.length > 0 ? (scheduledAppointments.length / scheduledLeads.length) * 100 : 0;
+    
     // Note: saleAmount doesn't exist on Lead type, so totalRevenue will be 0
     const totalRevenue = 0; // Would need saleAmount property on Lead
 
@@ -181,6 +193,8 @@ export const calculateTeamMetrics = (
       canceledLeadRate,
       samedaySitCloseRate,
       scheduledAppointmentCloseRate,
+      samedaySitRate,
+      scheduledSitRate,
       leadsToday: 0, // Would need date calculation
       leadsThisWeek: 0, // Would need date calculation  
       leadsThisMonth: safeLeads.length // Simplified for now
@@ -199,6 +213,8 @@ export const calculateTeamMetrics = (
       canceledLeadRate: 0,
       samedaySitCloseRate: 0,
       scheduledAppointmentCloseRate: 0,
+      samedaySitRate: 0,
+      scheduledSitRate: 0,
       leadsToday: 0,
       leadsThisWeek: 0,
       leadsThisMonth: 0

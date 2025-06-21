@@ -175,18 +175,8 @@ export default function PerformanceDashboard({ className }: PerformanceDashboard
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SetterPerformanceTable
-              setterPerformance={filteredSetterPerformance.slice(0, 5)}
-              selectedSetter={selectedSetter}
-              onSetterSelect={setSelectedSetter}
-            />
-            <CloserPerformanceTable
-              closerPerformance={filteredCloserPerformance.slice(0, 5)}
-              selectedCloser={selectedCloser}
-              onCloserSelect={setSelectedCloser}
-            />
-          </div>
+          {/* Removed SetterPerformanceTable and CloserPerformanceTable from Overview */}
+          {/* Only show them in their respective tabs below */}
         </TabsContent>
 
         <TabsContent value="setters" className="space-y-6">

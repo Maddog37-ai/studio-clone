@@ -91,7 +91,7 @@ export default function AvailabilityToggle() {
   };
 
   return (
-    <div className="flex items-center space-x-3 dark:card-glass dark:glow-cyan p-3 rounded-lg bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/50 dark:to-gray-900/50 border border-slate-200 dark:border-slate-700 shadow-md">
+    <div className="flex items-center space-x-3 dark:card-glass dark:glow-cyan premium:card-glass premium:glow-premium p-3 rounded-lg bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/50 dark:to-gray-900/50 premium:from-premium-glass premium:to-premium-glass border border-slate-200 dark:border-slate-700 premium:border-premium-glow shadow-md">
       <Switch
         id="availability-toggle"
         checked={isUIDuty}
@@ -99,18 +99,18 @@ export default function AvailabilityToggle() {
         disabled={isLoading}
         aria-label={isUIDuty ? "Set to Off Duty" : "Set to On Duty"}
         className={`
-          dark:border-turquoise/30 
-          data-[state=checked]:bg-turquoise 
-          dark:data-[state=checked]:glow-turquoise
+          dark:border-turquoise/30 premium:border-premium-purple/30
+          data-[state=checked]:bg-turquoise premium:data-[state=checked]:bg-premium-purple
+          dark:data-[state=checked]:glow-turquoise premium:data-[state=checked]:glow-premium
           shadow-lg hover:shadow-xl transition-all duration-300
           ${isUIDuty 
-            ? 'shadow-green-400/50 dark:shadow-turquoise/50' 
-            : 'shadow-red-400/50 dark:shadow-red-400/50'
+            ? 'shadow-green-400/50 dark:shadow-turquoise/50 premium:shadow-premium-purple/50' 
+            : 'shadow-red-400/50 dark:shadow-red-400/50 premium:shadow-red-400/50'
           }
           scale-110 border-2
           ${isUIDuty 
-            ? 'border-green-400 dark:border-turquoise' 
-            : 'border-red-400 dark:border-red-400'
+            ? 'border-green-400 dark:border-turquoise premium:border-premium-purple' 
+            : 'border-red-400 dark:border-red-400 premium:border-red-400'
           }
         `}
       />
@@ -119,8 +119,8 @@ export default function AvailabilityToggle() {
         className={`
           text-sm font-bold cursor-pointer transition-colors duration-300
           ${isUIDuty 
-            ? "text-green-600 dark:text-turquoise drop-shadow-sm" 
-            : "text-red-600 dark:text-red-400 drop-shadow-sm"
+            ? "text-green-600 dark:text-turquoise premium:text-premium-purple drop-shadow-sm premium:text-glow" 
+            : "text-red-600 dark:text-red-400 premium:text-red-400 drop-shadow-sm"
           }
         `}
       >

@@ -462,11 +462,11 @@ export default function LeadQueue() {
 
 
   return (
-    <Card className="h-full flex flex-col bg-white dark:bg-slate-900 shadow-lg hover:shadow-xl transition-all duration-200 border-0 ring-1 ring-slate-200 dark:ring-slate-800">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 px-6 pt-6">
-        <CardTitle className="text-xl sm:text-2xl font-bold font-headline flex items-center text-slate-900 dark:text-slate-100">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
-            <ListChecks className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
+    <Card className="h-full flex flex-col bg-transparent shadow-lg hover:shadow-xl transition-all duration-200 border-0 ring-1 ring-white/5 dark:ring-slate-800/20 dark:card-glass dark:glow-turquoise premium:card-glass premium:glow-premium">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 px-6 pt-6 bg-transparent">
+        <CardTitle className="text-xl sm:text-2xl font-bold font-headline flex items-center text-slate-900 dark:text-slate-100 premium:text-glow">
+          <div className="p-2 bg-transparent rounded-lg mr-3 dark:glow-turquoise premium:glow-premium premium:icon-hover-glow transition-all duration-300">
+            <ListChecks className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400 premium:text-premium-purple premium:nav-icon premium:icon-glow-purple transition-all duration-300" />
           </div>
           <div className="flex flex-col">
             <span>Lead Queues</span>
@@ -475,18 +475,18 @@ export default function LeadQueue() {
             </span>
           </div>
         </CardTitle>
-        {(loadingWaiting || loadingScheduled) && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+        {(loadingWaiting || loadingScheduled) && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground premium:text-premium-teal premium:nav-icon premium:icon-glow-teal" />}
       </CardHeader>
-      <CardContent className="flex-grow overflow-hidden px-6 pb-6">
+      <CardContent className="flex-grow overflow-hidden px-6 pb-6 bg-transparent">
         <Tabs defaultValue="waiting" className="flex flex-col h-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4 h-11 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-            <TabsTrigger value="waiting" className="h-9 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700">
-              <ListChecks className="mr-2 h-4 w-4" /> 
+          <TabsList className="grid w-full grid-cols-2 mb-4 h-11 bg-transparent rounded-lg p-1 premium:border premium:border-premium-glow">
+            <TabsTrigger value="waiting" className="h-9 text-sm font-medium rounded-md transition-all bg-transparent data-[state=active]:bg-white/10 data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700/20 premium:data-[state=active]:bg-gradient-to-r premium:data-[state=active]:from-premium-purple/20 premium:data-[state=active]:to-premium-teal/10 premium:data-[state=active]:border premium:data-[state=active]:border-premium-glow premium:data-[state=active]:glow-premium">
+              <ListChecks className="mr-2 h-4 w-4 premium:nav-icon premium:icon-glow-purple transition-all duration-300" /> 
               <span className="hidden sm:inline">Waiting List</span>
               <span className="sm:hidden">Waiting</span>
             </TabsTrigger>
-            <TabsTrigger value="scheduled" className="h-9 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700">
-              <CalendarClock className="mr-2 h-4 w-4" /> 
+            <TabsTrigger value="scheduled" className="h-9 text-sm font-medium rounded-md transition-all bg-transparent data-[state=active]:bg-white/10 data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700/20 premium:data-[state=active]:bg-gradient-to-r premium:data-[state=active]:from-premium-teal/20 premium:data-[state=active]:to-premium-purple/10 premium:data-[state=active]:border premium:data-[state=active]:border-premium-glow premium:data-[state=active]:glow-premium">
+              <CalendarClock className="mr-2 h-4 w-4 premium:nav-icon premium:icon-glow-teal transition-all duration-300" /> 
               <span className="hidden sm:inline">Scheduled</span>
               <span className="sm:hidden">Scheduled</span>
             </TabsTrigger>
@@ -495,16 +495,16 @@ export default function LeadQueue() {
             {loadingWaiting ? (
               <div className="flex h-full items-center justify-center">
                 <div className="text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3 premium:text-premium-purple premium:nav-icon premium:icon-glow-purple premium:icon-pulse" />
                   <p className="text-sm text-muted-foreground">Loading waiting leads...</p>
                 </div>
               </div>
             ) : waitingLeads.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center py-12">
-                <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full mb-4">
-                  <ListChecks className="h-8 w-8 text-muted-foreground" />
+                <div className="p-4 bg-transparent rounded-full mb-4 premium:glow-premium transition-all duration-300">
+                  <ListChecks className="h-8 w-8 text-muted-foreground premium:text-premium-purple premium:nav-icon premium:icon-glow-purple" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Queue Empty</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2 premium:text-glow">Queue Empty</h3>
                 <p className="text-muted-foreground text-sm max-w-xs">
                   No leads are currently waiting for assignment. New leads will appear here automatically.
                 </p>

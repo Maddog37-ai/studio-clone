@@ -28,16 +28,13 @@ export default function AnalyticsPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-headline flex items-center">
-          <TrendingUp className="mr-3 h-8 w-8 text-primary" />
-          Team Analytics
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Comprehensive insights into your team's performance and lead history.
-        </p>
-      </div>
-      
+      <h1 className="text-3xl font-bold font-headline flex items-center">
+        <TrendingUp className="mr-3 h-8 w-8 text-primary" />
+        Team Analytics
+      </h1>
+      <p className="text-muted-foreground mt-2">
+        Comprehensive insights into your team's performance and lead history.
+      </p>
       <AnalyticsDashboard />
     </div>
   );
