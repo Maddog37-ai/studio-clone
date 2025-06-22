@@ -161,15 +161,11 @@ export default function CloserCard({
                   onCheckedChange={handleToggleCloserAvailability}
                   disabled={isUpdatingStatus || isUpdatingOrder}
                   aria-label={currentStatusIsOnDuty ? `Set ${closer.name || "Closer"} to Off Duty` : `Set ${closer.name || "Closer"} to On Duty`}
-                  className={`scale-75 border-2 
-                    ${currentStatusIsOnDuty 
-                      ? 'bg-green-500 border-green-600 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-600' 
-                      : 'bg-gray-200 border-gray-400 data-[state=unchecked]:bg-gray-200 data-[state=unchecked]:border-gray-400'} 
-                    focus:ring-2 focus:ring-offset-2 focus:ring-green-400`}
+                  className="scale-75"
                 />
                 <Label
                   htmlFor={`status-toggle-${closer.uid}`}
-                  className={`text-xs font-medium ${currentStatusIsOnDuty ? "text-green-700" : "text-gray-700"}`}
+                  className={`text-xs font-medium ${currentStatusIsOnDuty ? "text-green-700" : "text-red-600"}`}
                 >
                   {isUpdatingStatus ? (
                     <Loader2 className="h-3 w-3 animate-spin" />

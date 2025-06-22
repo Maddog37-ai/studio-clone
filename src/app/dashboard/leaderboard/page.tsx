@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Trophy, TrendingUp, Users, Target, RefreshCw, Award } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
+import { db } from '@/lib/firebase'
+import { collection, getDocs } from 'firebase/firestore'
 
 // Updated interfaces
 interface SetterData {
@@ -26,6 +28,7 @@ interface CloserData {
   sales: number
   revenue: number
   avgDealSize: number
+  totalKW: number // <-- add this property for correct typing
   teamName?: string
   matchedProfile?: {
     displayName: string
@@ -53,119 +56,112 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [allUsers, setAllUsers] = useState<any[]>([])
 
-  // Mock data for testing
-  const loadMockData = () => {
-    setLoading(true)
-    setError(null)
-    
-    setTimeout(() => {
-      // Mock setters data
-      const mockSetters: SetterData[] = [
-        {
-          displayName: 'John Doe',
-          email: 'john@example.com',
-          totalLeads: 45,
-          qualifiedLeads: 32,
-          conversionRate: 71.1,
-          teamName: 'Alpha Team',
-          lastActivity: new Date().toISOString()
-        },
-        {
-          displayName: 'Jane Smith',
-          email: 'jane@example.com',
-          totalLeads: 38,
-          qualifiedLeads: 25,
-          conversionRate: 65.8,
-          teamName: 'Beta Team',
-          lastActivity: new Date().toISOString()
-        }
-      ]
+  // Date filter helpers
+  const today = new Date();
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday as start
+  const startOfLastWeek = new Date(startOfWeek);
+  startOfLastWeek.setDate(startOfWeek.getDate() - 7);
+  const startOfYTD = new Date(today.getFullYear() - (today.getMonth() < 9 ? 1 : 0), 9, 1); // Oct 1st of current or last year
+  const startOfSummer = new Date(today.getFullYear(), 4, 19); // May 19th
 
-      // Mock closers data
-      const mockClosers: CloserData[] = [
-        {
-          name: 'Mike Johnson',
-          normalizedName: 'mikejohnson',
-          sales: 12,
-          revenue: 180000,
-          avgDealSize: 15000,
-          teamName: 'Alpha Team'
-        },
-        {
-          name: 'Sarah Wilson',
-          normalizedName: 'sarahwilson', 
-          sales: 10,
-          revenue: 165000,
-          avgDealSize: 16500,
-          teamName: 'Beta Team'
-        }
-      ]
+  const dateFilters = [
+    { label: 'YTD', value: 'ytd', start: startOfYTD },
+    { label: 'Summer To Date', value: 'summer', start: startOfSummer },
+    { label: 'MTD', value: 'mtd', start: startOfMonth },
+    { label: 'WTD', value: 'wtd', start: startOfWeek },
+    { label: 'Last Week', value: 'lw', start: startOfLastWeek, end: startOfWeek },
+    { label: 'Today', value: 'today', start: startOfToday },
+  ];
 
-      // Mock team stats
-      const mockTeamStats: TeamStats[] = [
-        {
-          teamName: 'Alpha Team',
-          totalSetters: 1,
-          totalClosers: 1,
-          totalLeads: 45,
-          totalSales: 12,
-          totalRevenue: 180000,
-          avgConversion: 71.1
-        },
-        {
-          teamName: 'Beta Team',
-          totalSetters: 1,
-          totalClosers: 1,
-          totalLeads: 38,
-          totalSales: 10,
-          totalRevenue: 165000,
-          avgConversion: 65.8
-        }
-      ]
+  const [dateFilter, setDateFilter] = useState('ytd');
 
-      setSetters(mockSetters)
-      setClosers(mockClosers)
-      setTeamStats(mockTeamStats)
-      setLastUpdated(new Date())
-      setLoading(false)
-    }, 1000)
+  function filterByDate(data: any[], dateKey: string) {
+    const filter = dateFilters.find(f => f.value === dateFilter);
+    if (!filter) return data;
+    return data.filter(item => {
+      const date = new Date(item[dateKey]);
+      if (filter.value === 'lw') {
+        return date >= filter.start && date < filter.end;
+      }
+      return date >= filter.start;
+    });
   }
+
+  function formatKW(kw: number) {
+    return kw ? kw.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 }) : '0.00';
+  }
+
+  // Fetch all users from Firestore for avatar/profile matching
+  useEffect(() => {
+    async function fetchAllUsers() {
+      try {
+        const usersSnap = await getDocs(collection(db, 'users'))
+        setAllUsers(usersSnap.docs.map(doc => ({ uid: doc.id, ...doc.data() })))
+      } catch (e) {
+        // Ignore error, fallback to initials
+        setAllUsers([])
+      }
+    }
+    fetchAllUsers()
+  }, [])
+
+  // Use the public env variable for client-side fetch
+  const L_CSV_URL = process.env.NEXT_PUBLIC_L_CSV_URL;
 
   const loadRealData = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Fetch closers
-      const closersResponse = await fetch('/api/analytics/csv-data')
-      if (!closersResponse.ok) {
-        throw new Error(`Failed to fetch closers: ${closersResponse.status}`)
+      // Fetch leaderboard data from the new API route (server-side CSV parsing)
+      const leaderboardRes = await fetch('/api/leaderboard-data');
+      if (!leaderboardRes.ok) {
+        throw new Error(`Failed to fetch leaderboard data: ${leaderboardRes.status}`);
       }
-      const closersData = await closersResponse.json()
-      if (!closersData.success) {
-        throw new Error(closersData.error || 'Failed to load closers')
-      }
+      const { data: leaderboardData } = await leaderboardRes.json();
+      // leaderboardData is an array of objects parsed from the CSV
 
-      // Fetch setters
-      const settersResponse = await fetch('/api/analytics/setter-data')
-      if (!settersResponse.ok) {
-        throw new Error(`Failed to fetch setters: ${settersResponse.status}`)
-      }
-      const settersData = await settersResponse.json()
-      if (!settersData.success) {
-        throw new Error(settersData.error || 'Failed to load setters')
-      }
+      // Extract closers data
+      const closersData = leaderboardData.map((entry: any) => ({
+        name: entry['name'] || '',
+        normalizedName: entry['normalizedName'] || '',
+        sales: Number(entry['sales'] || 0),
+        revenue: Number(entry['revenue'] || 0),
+        avgDealSize: Number(entry['avgDealSize'] || 0),
+        totalKW: Number(entry['totalKW'] || 0),
+        teamName: entry['teamName'] || '',
+        matchedProfile: {
+          displayName: entry['displayName'] || '',
+          photoURL: entry['photoURL'] || '',
+          email: entry['email'] || '',
+          teamName: entry['teamName'] || '',
+        }
+      }));
 
-      setClosers(closersData.closers || [])
-      setSetters(settersData.setters || [])
+      // Extract setters data
+      const settersData = leaderboardData.map((entry: any) => ({
+        displayName: entry['displayName'] || entry['setter_name'] || '',
+        totalLeads: Number(entry['totalLeads'] || entry['total_leads'] || 0),
+        qualifiedLeads: Number(entry['qualifiedLeads'] || entry['qualified_leads'] || 0),
+        conversionRate: Number(entry['conversionRate'] || entry['conversion_rate'] || 0),
+        teamName: entry['teamName'] || entry['team'] || '',
+        lastActivity: entry['lastActivity'] || entry['date'] || '',
+      }));
+
+      setSetters(settersData);
+      setClosers(closersData)
       setTeamStats([]) // Team stats can be calculated if needed
       setLastUpdated(new Date())
     } catch (error) {
       console.error('Error loading real data:', error)
       setError(error instanceof Error ? error.message : 'Failed to load data')
       // Fall back to mock data
-      loadMockData()
+      // loadMockData()
       return
     } finally {
       setLoading(false)
@@ -174,7 +170,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     // Start with mock data for immediate display
-    loadMockData()
+    loadRealData()
   }, [])
 
   const formatCurrency = (amount: number) => {
@@ -201,6 +197,42 @@ export default function LeaderboardPage() {
     if (rank === 3) return <Badge className="bg-amber-600 text-white"><Award className="w-3 h-3 mr-1" />3rd</Badge>
     return <Badge variant="outline">#{rank}</Badge>
   }
+
+  // Helper to normalize names for fuzzy matching
+  function normalizeName(str: string): string {
+    return str
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '') // remove non-alphanumeric
+      .replace(/\s+/g, '') // remove whitespace
+  }
+
+  // Helper to match a setter/closer to a user profile (fuzzy)
+  function findUserProfile(nameOrEmail: string): any | undefined {
+    if (!nameOrEmail) return undefined
+    // Try to match by displayName (case-insensitive, trimmed)
+    const byName = allUsers.find(u => u.displayName && u.displayName.trim().toLowerCase() === nameOrEmail.trim().toLowerCase())
+    if (byName) return byName
+    // Try to match by email
+    const byEmail = allUsers.find(u => u.email && u.email.trim().toLowerCase() === nameOrEmail.trim().toLowerCase())
+    if (byEmail) return byEmail
+    // Try to match by normalized name (fuzzy)
+    const normalizedTarget = normalizeName(nameOrEmail)
+    const byFuzzy = allUsers.find(u => u.displayName && normalizeName(u.displayName) === normalizedTarget)
+    if (byFuzzy) return byFuzzy
+    // Try to match by first part of name (fuzzy)
+    const firstPart = nameOrEmail.split(' ')[0]
+    const byFirst = allUsers.find(u => u.displayName && normalizeName(u.displayName.split(' ')[0]) === normalizeName(firstPart))
+    if (byFirst) return byFirst
+    // Try to match by last part of name (fuzzy)
+    const lastPart = nameOrEmail.split(' ').slice(-1)[0]
+    const byLast = allUsers.find(u => u.displayName && normalizeName(u.displayName.split(' ').slice(-1)[0]) === normalizeName(lastPart))
+    if (byLast) return byLast
+    return undefined
+  }
+
+  // Filter setters and closers by selected date filter using the new 'date' field
+  const filteredSetters = filterByDate(setters, 'date');
+  const filteredClosers = filterByDate(closers, 'date');
 
   if (loading) {
     return (
@@ -229,31 +261,47 @@ export default function LeaderboardPage() {
           )}
           {error && (
             <p className="text-sm text-yellow-600 mt-1">
-              Note: Using sample data due to: {error}
+              {error}
             </p>
           )}
         </div>
         <div className="space-x-2">
-          <Button onClick={loadMockData} variant="outline" disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Mock Data
-          </Button>
           <Button onClick={loadRealData} variant="outline" disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Real Data
+            Refresh
           </Button>
         </div>
       </div>
 
+      {/* Date Filter Controls - Prominent Card */}
+      <Card className="mb-2">
+        <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center gap-2">
+          <span className="font-medium text-sm text-muted-foreground mr-4 mb-1 sm:mb-0">Date Range:</span>
+          <div className="flex flex-wrap gap-2">
+            {dateFilters.map(f => (
+              <Button
+                key={f.value}
+                size="sm"
+                variant={dateFilter === f.value ? 'default' : 'outline'}
+                onClick={() => setDateFilter(f.value)}
+                className="min-w-[110px]"
+              >
+                {f.label}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Setters</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{setters.length}</div>
+            <div className="text-2xl font-bold">{filteredSetters.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -262,28 +310,17 @@ export default function LeaderboardPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{closers.length}</div>
+            <div className="text-2xl font-bold">{filteredClosers.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Net kW</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {setters.reduce((sum, s) => sum + s.totalLeads, 0)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(closers.reduce((sum, c) => sum + c.revenue, 0))}
+              {formatKW(filteredClosers.reduce((sum, c) => sum + (c.totalKW || 0), 0))} kW
             </div>
           </CardContent>
         </Card>
@@ -305,35 +342,40 @@ export default function LeaderboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {setters.slice(0, 10).map((setter, index) => (
-                  <div key={setter.displayName + index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      {getRankBadge(index + 1)}
-                      <Avatar>
-                        {/* No photoURL for real data, fallback to initials */}
-                        <AvatarFallback>
-                          {setter.displayName.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{setter.displayName}</p>
-                        <p className="text-sm text-muted-foreground">{setter.teamName || 'No team'}</p>
+                {filteredSetters.slice(0, 10).map((setter, index) => {
+                  const matched = findUserProfile(setter.displayName || setter.email || '')
+                  const avatarUrl = matched?.avatarUrl
+                  const fullName = matched?.displayName || setter.displayName
+                  return (
+                    <div key={setter.displayName + index} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        {getRankBadge(index + 1)}
+                        <Avatar>
+                          {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName} />}
+                          <AvatarFallback>
+                            {fullName?.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold">{fullName}</p>
+                          <p className="text-sm text-muted-foreground">{setter.teamName || 'No team'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">{setter.totalLeads} leads</p>
+                        <p className="text-sm text-muted-foreground">
+                          {setter.qualifiedLeads} qualified ({setter.conversionRate.toFixed(1)}%)
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Last active: {formatDate(setter.lastActivity)}
+                        </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold">{setter.totalLeads} leads</p>
-                      <p className="text-sm text-muted-foreground">
-                        {setter.qualifiedLeads} qualified ({setter.conversionRate.toFixed(1)}%)
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Last active: {formatDate(setter.lastActivity)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {setters.length === 0 && (
+                  )
+                })}
+                {filteredSetters.length === 0 && (
                   <div className="text-center p-8 text-muted-foreground">
-                    No setter data available. Click "Real Data" to load from Firestore.
+                    No setter data available.
                   </div>
                 )}
               </div>
@@ -345,39 +387,44 @@ export default function LeaderboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Top Closers</CardTitle>
-              <CardDescription>Ranked by total sales and revenue</CardDescription>
+              <CardDescription>Ranked by Net Deals and Net kW</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {closers.slice(0, 10).map((closer, index) => (
-                  <div key={`${closer.name}-${index}`} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      {getRankBadge(index + 1)}
-                      <Avatar>
-                        <AvatarImage src={closer.matchedProfile?.photoURL} />
-                        <AvatarFallback>
-                          {closer.name.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{closer.name}</p>
+                {filteredClosers.slice(0, 10).map((closer, index) => {
+                  const matched = findUserProfile(closer.name)
+                  const avatarUrl = matched?.avatarUrl || closer.matchedProfile?.photoURL
+                  const fullName = matched?.displayName || closer.name
+                  return (
+                    <div key={`${closer.name}-${index}`} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        {getRankBadge(index + 1)}
+                        <Avatar>
+                          {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName} />}
+                          <AvatarFallback>
+                            {fullName?.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold">{fullName}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {closer.teamName || closer.matchedProfile?.teamName || 'No team'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">{closer.sales} Net Deals</p>
                         <p className="text-sm text-muted-foreground">
-                          {closer.teamName || closer.matchedProfile?.teamName || 'No team'}
+                          {formatKW(closer.totalKW || 0)} Net kW
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Avg Deal Size: {closer.avgDealSize ? formatCurrency(closer.avgDealSize) : '-'}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold">{closer.sales} sales</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatCurrency(closer.revenue)} revenue
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Avg: {formatCurrency(closer.avgDealSize)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {closers.length === 0 && (
+                  )
+                })}
+                {filteredClosers.length === 0 && (
                   <div className="text-center p-8 text-muted-foreground">
                     No closer data available. Check Google Sheets CSV connection.
                   </div>

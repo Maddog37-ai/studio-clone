@@ -1,155 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { leadflowAssistant } from '@/ai/leadflow-assistant'
 
 interface ChatbotRequest {
   userMessage: string
   context?: {
     userRole?: string
     teamId?: string
+    leadCount?: number
+    recentActivity?: string
   }
+  conversationHistory?: Array<{
+    role: 'user' | 'assistant'
+    content: string
+    timestamp: string
+  }>
 }
 
 interface ChatbotResponse {
   text: string
-  chart: {
-    type: 'bar' | 'line' | 'pie'
-    data: {
-      labels: string[]
-      datasets: Array<{
-        label: string
-        data: number[]
-        backgroundColor?: string | string[]
-        borderColor?: string
-        fill?: boolean
-      }>
-    }
-    options: {
-      responsive: boolean
-      [key: string]: any
-    }
-  } | null
-}
-
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
-
-async function fetchSalesDataFromCSV(): Promise<any[]> {
-  try {
-    const csvUrl = process.env.GOOGLE_SHEETS_OVERALL_CSV_URL
-    if (!csvUrl) {
-      throw new Error('Google Sheets CSV URL not configured')
-    }
-
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 15000)
-    
-    const response = await fetch(csvUrl, {
-      method: 'GET',
-      headers: { 'Accept': 'text/csv' },
-      signal: controller.signal
-    })
-    
-    clearTimeout(timeoutId)
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    
-    const csvText = await response.text()
-    const lines = csvText.trim().split('\n')
-    
-    if (lines.length < 2) {
-      return []
-    }
-    
-    // Parse header
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
-    const closerIndex = headers.findIndex(h => h.includes('closer') && !h.includes('division') && !h.includes('region'))
-    const systemSizeIndex = headers.findIndex(h => h.includes('system_size'))
-    const realizationIndex = headers.findIndex(h => h.includes('realization'))
-    
-    if (closerIndex === -1) {
-      return []
-    }
-    
-    const salesData: any[] = []
-    
-    // Parse data rows (limit to prevent hanging)
-    for (let i = 1; i < Math.min(lines.length, 500); i++) {
-      const row = lines[i].split(',')
-      
-      if (row.length > Math.max(closerIndex, systemSizeIndex, realizationIndex)) {
-        const closer = row[closerIndex]?.trim()
-        const systemSize = parseFloat(row[systemSizeIndex]?.trim() || '0')
-        const realization = parseFloat(row[realizationIndex]?.trim() || '0')
-        
-        if (closer && closer !== '' && !isNaN(systemSize) && !isNaN(realization)) {
-          salesData.push({
-            closer,
-            systemSize,
-            realization,
-            revenue: systemSize * realization
-          })
-        }
-      }
-    }
-    
-    return salesData
-  } catch (error) {
-    console.error('Error fetching CSV data:', error)
-    return []
-  }
-}
-
-function formatSalesDataForPrompt(salesData: any[]): string {
-  if (salesData.length === 0) {
-    return "No sales data available."
-  }
-
-  // Aggregate data by closer
-  const closerStats = salesData.reduce((acc: any, record) => {
-    const closer = record.closer
-    if (!acc[closer]) {
-      acc[closer] = {
-        name: closer,
-        totalDeals: 0,
-        totalSystemSize: 0,
-        totalRevenue: 0
-      }
-    }
-    
-    acc[closer].totalDeals++
-    acc[closer].totalSystemSize += record.systemSize
-    acc[closer].totalRevenue += record.revenue
-    
-    return acc
-  }, {})
-
-  const aggregatedData = Object.values(closerStats).map((closer: any) => ({
-    ...closer,
-    avgDealSize: closer.totalSystemSize / closer.totalDeals
-  }))
-
-  // Sort by total revenue
-  aggregatedData.sort((a: any, b: any) => b.totalRevenue - a.totalRevenue)
-
-  return JSON.stringify({
-    summary: {
-      totalClosers: aggregatedData.length,
-      totalDeals: salesData.length,
-      totalSystemSize: salesData.reduce((sum, record) => sum + record.systemSize, 0),
-      totalRevenue: salesData.reduce((sum, record) => sum + record.revenue, 0)
-    },
-    topPerformers: aggregatedData.slice(0, 10),
-    allClosers: aggregatedData
-  }, null, 2)
+  chart: null // Chart support can be added later if Genkit returns chart data
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: ChatbotRequest = await request.json()
-    const { userMessage, context } = body
+    const { userMessage, context, conversationHistory } = body
 
     if (!userMessage || typeof userMessage !== 'string') {
       return NextResponse.json(
@@ -158,78 +33,97 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json(
-        { error: 'Gemini API key not configured' },
-        { status: 500 }
-      )
-    }
-
-    // Fetch sales data
-    const salesData = await fetchSalesDataFromCSV()
-    const formattedData = formatSalesDataForPrompt(salesData)
-
-    // Build the prompt
-    const prompt = `You are a sales analytics assistant. Here's the latest sales data:
-
-${formattedData}
-
-The user asked: "${userMessage}"
-
-Respond clearly and helpfully. If the question requires a graph, return a JSON object in this format:
-
-{
-  "text": "Short written answer or summary",
-  "chart": {
-    "type": "bar" | "line" | "pie",
-    "data": {
-      "labels": [...],
-      "datasets": [{ "label": "Some label", "data": [...] }]
-    },
-    "options": { "responsive": true }
-  }
-}
-
-If no graph is needed, return:
-{
-  "text": "...",
-  "chart": null
-}
-
-Important: Always return valid JSON. If you're providing analysis that would benefit from a chart, include appropriate chart data with proper labels and datasets.`
-
-    // Send to Gemini
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const responseText = response.text()
-
-    // Try to parse as JSON, fall back to text response if parsing fails
-    let parsedResponse: ChatbotResponse
+    // Fetch analytics data for context
+    let analyticsData = {};
     try {
-      // Clean the response text to extract JSON
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-      const jsonText = jsonMatch ? jsonMatch[0] : responseText
+      // Use localhost URLs for internal API calls during development
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? process.env.NEXT_PUBLIC_BASE_URL || ''
+        : 'http://localhost:9002';
       
-      parsedResponse = JSON.parse(jsonText)
-      
-      // Validate the response structure
-      if (!parsedResponse.text) {
-        throw new Error('Invalid response structure')
+      const [closerRes, setterRes] = await Promise.all([
+        fetch(`${baseUrl}/api/analytics/csv-data`),
+        fetch(`${baseUrl}/api/analytics/setter-data`)
+      ]);
+      const closerJson = closerRes.ok ? await closerRes.json() : { closers: [] };
+      const setterJson = setterRes.ok ? await setterRes.json() : { setters: [] };
+      analyticsData = {
+        closers: closerJson.closers || [],
+        setters: setterJson.setters || [],
+        totalSales: closerJson.totalSales || 0,
+        totalRevenue: closerJson.totalRevenue || 0,
+        lastUpdated: closerJson.lastUpdated || null
+      };
+    } catch (err) {
+      // If analytics fetch fails, continue with empty analytics
+      analyticsData = { closers: [], setters: [] };
+    }
+
+    // Compose context for Genkit
+    let userRole: 'manager' | 'closer' | 'setter' = 'closer';
+    if (context?.userRole === 'manager' || context?.userRole === 'admin') userRole = 'manager';
+    else if (context?.userRole === 'setter') userRole = 'setter';
+    else if (context?.userRole === 'closer') userRole = 'closer';
+
+    const aiContext = {
+      userRole,
+      teamId: context?.teamId || 'default',
+      leadCount: context?.leadCount,
+      recentActivity: context?.recentActivity,
+      analytics: analyticsData // <-- Inject analytics data here
+    };
+
+    // Defensive: ensure analyticsData is always an object with arrays
+    const closersArr = analyticsData && typeof analyticsData === 'object' && 'closers' in analyticsData && Array.isArray((analyticsData as any).closers) ? (analyticsData as any).closers : [];
+    const settersArr = analyticsData && typeof analyticsData === 'object' && 'setters' in analyticsData && Array.isArray((analyticsData as any).setters) ? (analyticsData as any).setters : [];
+
+    // Detect analytics questions and answer directly if possible
+    const analyticsQ = userMessage.toLowerCase();
+    if (analyticsQ.includes('top') && analyticsQ.includes('closer')) {
+      // Top closers
+      if (closersArr.length > 0) {
+        const top = closersArr.slice(0, 5).map((c, i) => `${i + 1}. ${c.name} - ${c.sales} sales, $${c.revenue?.toLocaleString?.() || c.revenue} revenue, ${c.totalKW} kW`).join('\n');
+        return NextResponse.json({ text: `🏆 Top Closers This Month:\n${top}`, chart: null });
+      } else {
+        return NextResponse.json({ text: 'No closer data available.', chart: null });
       }
-    } catch (parseError) {
-      // If parsing fails, return text-only response
-      parsedResponse = {
-        text: responseText,
-        chart: null
+    }
+    if (analyticsQ.includes('top') && analyticsQ.includes('setter')) {
+      // Top setters
+      if (settersArr.length > 0) {
+        const top = settersArr.slice(0, 5).map((s, i) => `${i + 1}. ${s.displayName} - ${s.totalLeads} leads`).join('\n');
+        return NextResponse.json({ text: `🌟 Top Setters:\n${top}`, chart: null });
+      } else {
+        return NextResponse.json({ text: 'No setter data available.', chart: null });
+      }
+    }
+    if (analyticsQ.includes('conversion rate')) {
+      // Conversion rate (use closers for now)
+      if (closersArr.length > 0) {
+        const avg = (closersArr.reduce((sum, c) => sum + (c.sales || 0), 0) / (closersArr.length || 1)).toFixed(2);
+        return NextResponse.json({ text: `📈 Average Conversion Rate (by closer): ${avg} sales per closer.`, chart: null });
+      } else {
+        return NextResponse.json({ text: 'No conversion data available.', chart: null });
       }
     }
 
-    return NextResponse.json(parsedResponse)
+    // Call Genkit-powered assistant
+    const aiResponse = await leadflowAssistant({
+      message: userMessage,
+      context: aiContext,
+      conversationHistory: conversationHistory || [],
+    })
 
+    const response: ChatbotResponse = {
+      text: aiResponse,
+      chart: null
+    }
+
+    return NextResponse.json(response)
   } catch (error) {
     console.error('Chatbot API error:', error)
     return NextResponse.json(
-      { 
+      {
         error: 'Internal server error',
         text: 'Sorry, I encountered an error processing your request. Please try again.',
         chart: null

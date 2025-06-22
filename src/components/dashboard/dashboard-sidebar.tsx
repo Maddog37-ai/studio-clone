@@ -100,12 +100,14 @@ function DashboardSidebarContent() {
       <Sidebar className="">
         <SidebarHeader className="border-b border-border/20">
           <div className="flex items-center space-x-3 p-4">
-            <div className="p-2 bg-gradient-to-br from-premium-purple/30 to-premium-teal/20 rounded-xl premium:icon-hover-glow shadow-sm">
-              <GearIcon className="h-10 w-10 sm:h-12 sm:w-12 premium:text-premium-purple premium:icon-glow-purple premium:icon-pulse transition-all duration-300" />
+            <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 premium:from-premium-purple/20 premium:to-premium-teal/10 rounded-xl shadow-sm premium:icon-hover-glow">
+              <GearIcon className="h-12 w-12 text-[#3574F2] dark:text-turquoise premium:text-premium-purple premium:icon-glow-purple premium:icon-pulse transition-all duration-300" />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-              <span className="text-xl sm:text-2xl font-extrabold font-headline text-foreground tracking-tight leading-tight">LeadFlow</span>
-              <span className="text-xs text-muted-foreground font-medium tracking-wide">Premium Lead Management</span>
+              <span className="text-lg font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan premium:from-premium-purple premium:to-premium-teal bg-clip-text text-transparent premium:text-glow">
+                LeadFlow
+              </span>
+              <span className="text-xs text-muted-foreground premium:text-muted-foreground">Lead History</span>
             </div>
           </div>
         </SidebarHeader>

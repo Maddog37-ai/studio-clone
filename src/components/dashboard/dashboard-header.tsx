@@ -31,13 +31,13 @@ export default function DashboardHeader() {
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border/20 bg-white/95 dark:bg-slate-950/95 dark:card-glass dark:glow-turquoise backdrop-blur-md supports-[backdrop-filter]:bg-white/95 dark:supports-[backdrop-filter]:bg-slate-950/95 shadow-sm">
         <div className="container flex h-16 sm:h-18 max-w-7xl mx-auto items-center px-4 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="mr-6 sm:mr-8 flex items-center space-x-3 premium:text-premium-purple group">
-            <div className="p-3 bg-gradient-to-br from-premium-purple/30 to-premium-teal/20 rounded-xl premium:icon-hover-glow shadow-sm">
-              <GearIcon className="h-14 w-14 sm:h-20 sm:w-20 premium:text-premium-purple premium:icon-glow-purple premium:icon-pulse transition-all duration-300" />
+          <Link href="/dashboard" className="mr-6 sm:mr-8 flex items-center space-x-3 text-[#3574F2] dark:text-turquoise premium:text-premium-purple group">
+            <div className="p-3 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 premium:from-premium-purple/20 premium:to-premium-teal/10 rounded-xl group-hover:from-[#3574F2]/30 group-hover:to-[#5096F2]/20 dark:group-hover:from-turquoise/30 dark:group-hover:to-cyan/20 premium:group-hover:from-premium-purple/30 premium:group-hover:to-premium-teal/30 transition-all duration-300 shadow-sm dark:glow-turquoise premium:glow-premium premium:icon-hover-glow">
+              <GearIcon className="h-24 w-24 sm:h-28 sm:w-28 text-[#3574F2] dark:text-turquoise premium:text-premium-purple premium:nav-icon premium:icon-glow-purple premium:icon-pulse transition-all duration-300" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl sm:text-3xl font-extrabold font-headline text-foreground tracking-tight leading-tight">LeadFlow</span>
-              <span className="text-xs text-muted-foreground hidden sm:block font-medium tracking-wide">Premium Lead Management</span>
+              <span className="text-xl sm:text-2xl font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan premium:from-premium-purple premium:to-premium-teal bg-clip-text text-transparent premium:text-glow">LeadFlow</span>
+              <span className="text-xs text-muted-foreground hidden sm:block">Lead History System</span>
             </div>
           </Link>
           

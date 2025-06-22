@@ -8,6 +8,7 @@ const LeadAssistantInputSchema = z.object({
     teamId: z.string(),
     leadCount: z.number().optional(),
     recentActivity: z.string().optional(),
+    analytics: z.any().optional(), // <-- Accept analytics data
   }),
   conversationHistory: z.array(z.object({
     role: z.enum(['user', 'assistant']),
@@ -24,24 +25,27 @@ export const leadflowAssistant = ai.defineFlow(
   },
   async (input) => {
     const { message, context, conversationHistory = [] } = input;
-    
+    const analytics = context.analytics || {};
+
+    // Summarize analytics for the prompt in a structured table
+    let analyticsSummary = '';
+    if (context.analytics) {
+      const { closers = [], setters = [], totalSales, totalRevenue, lastUpdated } = context.analytics;
+      if (closers.length > 0) {
+        analyticsSummary += `\nTop Closers This Month (Name | Sales | Revenue | kW):`;
+        analyticsSummary += '\n' + closers.slice(0, 5).map((c, i) => `${i + 1}. ${c.name} | ${c.sales} | $${c.revenue?.toLocaleString?.() || c.revenue} | ${c.totalKW}`).join('\n');
+      }
+      if (setters.length > 0) {
+        analyticsSummary += `\nTop Setters (Name | Leads):`;
+        analyticsSummary += '\n' + setters.slice(0, 5).map((s, i) => `${i + 1}. ${s.displayName} | ${s.totalLeads}`).join('\n');
+      }
+      if (typeof totalSales === 'number') analyticsSummary += `\nTotal Sales: ${totalSales}`;
+      if (typeof totalRevenue === 'number') analyticsSummary += `\nTotal Revenue: $${totalRevenue?.toLocaleString?.() || totalRevenue}`;
+      if (lastUpdated) analyticsSummary += `\nData last updated: ${lastUpdated}`;
+    }
+
     // Build context-aware system prompt
-    const systemPrompt = `You are LeadFlow Assistant, an AI helper for a lead history system.
-
-User Context:
-- Role: ${context.userRole}
-- Team ID: ${context.teamId}
-- Current Leads: ${context.leadCount || 0}
-- Recent Activity: ${context.recentActivity || 'None'}
-
-You help users with:
-1. Lead history guidance
-2. Best practices for ${context.userRole}s
-3. System navigation help
-4. Team coordination advice
-5. Performance optimization tips
-
-Keep responses concise, helpful, and role-appropriate. Use emojis sparingly but effectively.`;
+    const systemPrompt = `You are LeadFlow Assistant, an AI helper for a lead history system.\n\nUser Context:\n- Role: ${context.userRole}\n- Team ID: ${context.teamId}\n- Current Leads: ${context.leadCount || 0}\n- Recent Activity: ${context.recentActivity || 'None'}\n\nSALES ANALYTICS DATA (for this team):\n${analyticsSummary || 'No analytics data available.'}\n\nYou help users with:\n1. Lead history guidance\n2. Best practices for ${context.userRole}s\n3. System navigation help\n4. Team coordination advice\n5. Performance optimization tips\n6. Answering analytics questions using the provided data above.\n\nWhen asked about sales, top performers, or team stats, ALWAYS use the analytics data above. If the answer is not in the data, say so. If a user asks for top closers, list them from the table. If a user asks for conversion rates or sales, use the numbers above.\n\nKeep responses concise, helpful, and role-appropriate. Use emojis sparingly but effectively.`;
 
     // Format conversation history for genkit
     const formattedHistory = conversationHistory.slice(-10).map(msg => ({

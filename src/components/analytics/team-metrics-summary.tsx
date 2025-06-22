@@ -78,37 +78,57 @@ export function TeamMetricsSummary({ teamMetrics, loading }: TeamMetricsSummaryP
     }
   ];
 
-  // Split cards for custom layout
-  const leftCards = metricCards.filter(card => card.title === "Setter Overview" || card.title === "Closer Overview");
-  const rightCards = metricCards.filter(card => card.title !== "Setter Overview" && card.title !== "Closer Overview");
-
-  // Group right cards for 2x2 grid layout
-  const rightMetricTitles = [
-    "Total Leads",
-    "Failed Credits %",
-    "Overall Close Rate",
-    "Scheduled Appointments That Close %"
-  ];
-  const rightMetricCards = rightCards.filter(card => rightMetricTitles.includes(card.title));
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Left column: Setter Overview, Closer Overview stacked */}
-      <div className="flex flex-col gap-6">
-        {leftCards.map((metric, index) => {
-          if (!metric.isCombined) return null;
-          const Icon = metric.icon;
-          const isSettersCard = metric.title === "Setter Overview";
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {metricCards.map((metric, index) => {
+        const Icon = metric.icon;
+        
+        // Helper function to get icon color based on icon type
+        const getIconColor = (IconComponent: any) => {
+          if (IconComponent === Activity) return "text-blue-500";
+          if (IconComponent === Target) return "text-green-500";
+          if (IconComponent === TrendingUp) return "text-purple-500";
+          if (IconComponent === Calendar) return "text-orange-500";
+          return "text-muted-foreground";
+        };
+        
+        // Handle empty card
+        if (metric.isEmpty) {
           return (
             <Card key={index}>
+              <CardHeader className="flex flex-row items-center justify-center space-y-0 pb-2 text-center">
+                <div className="flex flex-col items-center space-y-1">
+                  <Icon className={`h-6 w-6 ${getIconColor(Icon)}`} />
+                  <CardTitle className="text-sm font-medium text-center">
+                    {metric.title}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="text-muted-foreground text-sm">
+                  Coming Soon
+                </div>
+              </CardContent>
+            </Card>
+          );
+        }
+        
+        // Handle combined card (Active Setters & Sit Rates OR Active Closers & Close Rates)
+        if (metric.isCombined) {
+          const isSettersCard = metric.title === "Setter Overview";
+          const isClosersCard = metric.title === "Closer Overview";
+          
+          return (
+            <Card key={index} className="md:col-span-2">
               <CardHeader className="flex flex-row items-center justify-center space-y-0 pb-4 text-center">
                 <CardTitle className="flex items-center justify-center gap-2">
-                  <Icon className={`h-5 w-5 ${isSettersCard ? 'text-purple-500' : 'text-green-500'}`} />
+                  <Icon className={`h-5 w-5 ${getIconColor(Icon)}`} />
                   {metric.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-6 pb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left Section - Active Count */}
                   <div className="flex flex-col items-center justify-center text-center space-y-3">
                     <h4 className="text-sm font-medium text-muted-foreground">
                       {isSettersCard ? "Active Setters" : "Active Closers"}
@@ -117,6 +137,8 @@ export function TeamMetricsSummary({ teamMetrics, loading }: TeamMetricsSummaryP
                       {isSettersCard ? metric.totalSetters : metric.totalClosers}
                     </div>
                   </div>
+                  
+                  {/* Right Section - Rates */}
                   <div className="flex flex-col items-center justify-center text-center space-y-3">
                     <h4 className="text-sm font-medium text-muted-foreground">
                       {isSettersCard ? "Sit Rates by Type" : "Close Rates by Type"}
@@ -137,32 +159,30 @@ export function TeamMetricsSummary({ teamMetrics, loading }: TeamMetricsSummaryP
               </CardContent>
             </Card>
           );
-        })}
-      </div>
-      {/* Right column: 2x2 grid of metric cards, tighter and larger font */}
-      <div className="grid grid-cols-2 grid-rows-2 gap-3 md:gap-4">
-        {rightMetricCards.map((metric, index) => {
-          const Icon = metric.icon;
-          const getIconColor = (IconComponent: any) => {
-            if (IconComponent === Activity) return "text-blue-500";
-            if (IconComponent === Target) return "text-green-500";
-            if (IconComponent === TrendingUp) return "text-purple-500";
-            if (IconComponent === Calendar) return "text-orange-500";
-            return "text-muted-foreground";
-          };
-          return (
-            <Card key={index} className="aspect-square w-full max-w-[220px] mx-auto flex flex-col justify-center items-center">
-              <CardHeader className="flex flex-col items-center justify-center pb-1 pt-4">
-                <Icon className={`h-7 w-7 mb-1 ${getIconColor(Icon)}`} />
-                <span className="text-base font-semibold text-center">Data Snapshot</span>
-              </CardHeader>
-              <CardContent className="flex flex-1 items-center justify-center p-0">
-                <span className="text-base text-muted-foreground text-center">Request Data Here</span>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+        }
+        
+        // Handle regular cards
+        return (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-center space-y-0 pb-2 text-center">
+              <div className="flex flex-col items-center space-y-1">
+                <Icon className={`h-6 w-6 ${getIconColor(Icon)}`} />
+                <CardTitle className="text-sm font-medium text-center">
+                  {metric.title}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-center">
+              <div className="text-3xl font-bold">
+                {metric.value}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {metric.title.includes('%') ? 'Performance Rate' : 'Total Count'}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
