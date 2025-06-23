@@ -233,7 +233,14 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
 
     // Create preview URLs (browser only)
     const newPreviewUrls = typeof window !== 'undefined' 
-      ? files.map(file => URL.createObjectURL(file))
+      ? files.map(file => {
+          try {
+            return URL.createObjectURL(file);
+          } catch (error) {
+            console.error('Error creating object URL:', error);
+            return '';
+          }
+        }).filter(url => url !== '')
       : [];
     setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
     
@@ -677,12 +684,18 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
                           {previewUrls.map((url, index) => (
                             <div key={index} className="relative group">
                               <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={url}
-                                  alt={`Preview ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                />
+                                {url ? (
+                                  /* eslint-disable-next-line @next/next/no-img-element */
+                                  <img
+                                    src={url}
+                                    alt={`Preview ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                                    <FileImage className="h-8 w-8 text-muted-foreground" />
+                                  </div>
+                                )}
                               </div>
                               <Button
                                 type="button"

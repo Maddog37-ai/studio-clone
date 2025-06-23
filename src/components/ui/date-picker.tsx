@@ -39,18 +39,9 @@ export function DatePicker({
     setIsClient(true);
   }, []);
 
-  // Close calendar when clicking outside
+  // Close calendar when clicking outside (simplified since we have overlay)
   React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
+    // No need for complex click detection since overlay handles it
   }, [open]);
 
   // Default disabled function to prevent past dates
@@ -98,9 +89,19 @@ export function DatePicker({
       {/* Calendar Portal - Using Portal to prevent dialog layout shifts */}
       {open && isClient && (
         <>
+          {/* Invisible overlay to prevent click-through */}
           {createPortal(
             <div 
-              className="fixed z-[9999] bg-background/95 backdrop-blur-sm border shadow-lg rounded-md p-0"
+              className="fixed inset-0 z-[99998]"
+              onClick={() => setOpen(false)}
+            />,
+            document.body
+          )}
+          {/* Calendar */}
+          {createPortal(
+            <div 
+              data-calendar-portal
+              className="fixed z-[99999] bg-background border shadow-xl rounded-md p-0 pointer-events-auto"
               style={{
                 top: buttonRef.current 
                   ? buttonRef.current.getBoundingClientRect().bottom + window.scrollY + 4
@@ -109,20 +110,25 @@ export function DatePicker({
                   ? buttonRef.current.getBoundingClientRect().left + window.scrollX
                   : 0,
               }}
+              onClick={(e) => e.stopPropagation()}
             >
               <Calendar
                 mode="single"
                 selected={date}
                 onSelect={(selectedDate) => {
-                  onDateChange(selectedDate);
-                  setOpen(false);
+                  if (selectedDate) {
+                    onDateChange(selectedDate);
+                    setOpen(false);
+                  }
                 }}
                 disabled={finalDisabled}
                 initialFocus
-                className="rounded-md"
+                className="rounded-md pointer-events-auto"
                 classNames={{
-                  day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                  day_today: "bg-accent text-accent-foreground font-semibold",
+                  day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground pointer-events-auto",
+                  day_today: "bg-accent text-accent-foreground font-semibold pointer-events-auto",
+                  day: "pointer-events-auto cursor-pointer",
+                  button: "pointer-events-auto",
                 }}
               />
             </div>,
