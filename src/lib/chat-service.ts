@@ -127,6 +127,16 @@ export class ChatService {
         ...doc.data(),
       })) as ChatChannel[];
 
+      // Get all users to calculate member counts
+      const usersQuery = query(collection(db, "users"));
+      const usersSnapshot = await getDocs(usersQuery);
+      const users = usersSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() })) as Array<{uid: string, teamId?: string}>;
+
+      // Get all teams to map teamId to regionId  
+      const teamsQuery = query(collection(db, "teams"));
+      const teamsSnapshot = await getDocs(teamsQuery);
+      const teams = teamsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Array<{id: string, regionId?: string}>;
+
       // Find user's specific channels
       let regionalChannel = allChannels.find(channel => 
         channel.type === "region" && channel.regionId === (userRegionId || "default")
@@ -135,6 +145,23 @@ export class ChatService {
       let teamChannel = allChannels.find(channel => 
         channel.type === "team" && channel.teamId === userTeamId
       );
+
+      // Calculate member counts
+      let regionalMemberCount = 0;
+      let teamMemberCount = 0;
+
+      if (userRegionId || "default") {
+        // Count users whose team belongs to this region
+        const regionTeamIds = teams
+          .filter(team => team.regionId === (userRegionId || "default"))
+          .map(team => team.id);
+        regionalMemberCount = users.filter(user => 
+          user.teamId && regionTeamIds.includes(user.teamId)
+        ).length;
+      }
+
+      // Count users with this specific teamId
+      teamMemberCount = users.filter(user => user.teamId === userTeamId).length;
 
       // Create missing channels if they don't exist
       const batch = writeBatch(db);
@@ -148,7 +175,7 @@ export class ChatService {
           name: `${regionName} Regional Chat`,
           type: "region",
           regionId: userRegionId || "default",
-          memberCount: 0,
+          memberCount: regionalMemberCount,
           isActive: true,
           lastMessageTimestamp: serverTimestamp(),
         });
@@ -158,9 +185,15 @@ export class ChatService {
           name: `${regionName} Regional Chat`,
           type: "region" as const,
           regionId: userRegionId || "default",
-          memberCount: 0,
+          memberCount: regionalMemberCount,
           isActive: true,
         };
+        needsBatchCommit = true;
+      } else {
+        // Update existing regional channel member count
+        regionalChannel.memberCount = regionalMemberCount;
+        const regionChannelRef = doc(db, "chatChannels", regionalChannel.id);
+        batch.update(regionChannelRef, { memberCount: regionalMemberCount });
         needsBatchCommit = true;
       }
 
@@ -173,7 +206,7 @@ export class ChatService {
           type: "team",
           teamId: userTeamId,
           regionId: userRegionId || "default",
-          memberCount: 0,
+          memberCount: teamMemberCount,
           isActive: true,
           lastMessageTimestamp: serverTimestamp(),
         });
@@ -184,9 +217,15 @@ export class ChatService {
           type: "team" as const,
           teamId: userTeamId,
           regionId: userRegionId || "default",
-          memberCount: 0,
+          memberCount: teamMemberCount,
           isActive: true,
         };
+        needsBatchCommit = true;
+      } else {
+        // Update existing team channel member count
+        teamChannel.memberCount = teamMemberCount;
+        const teamChannelRef = doc(db, "chatChannels", teamChannel.id);
+        batch.update(teamChannelRef, { memberCount: teamMemberCount });
         needsBatchCommit = true;
       }
 
@@ -288,6 +327,55 @@ export class ChatService {
       isDeleted: true,
       content: "[Message deleted]",
     });
+ }
+
+  // Calculate and update member counts for all channels
+  static async updateAllChannelMemberCounts(): Promise<void> {
+    try {
+      // Get all users
+      const usersQuery = query(collection(db, "users"));
+      const usersSnapshot = await getDocs(usersQuery);
+      const users = usersSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() })) as Array<{uid: string, teamId?: string}>;
+
+      // Get all teams to map teamId to regionId
+      const teamsQuery = query(collection(db, "teams"));
+      const teamsSnapshot = await getDocs(teamsQuery);
+      const teams = teamsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Array<{id: string, regionId?: string}>;
+
+      // Get all channels
+      const channelsQuery = query(collection(db, "chatChannels"));
+      const channelsSnapshot = await getDocs(channelsQuery);
+      
+      const batch = writeBatch(db);
+
+      // Calculate member counts for each channel
+      for (const channelDoc of channelsSnapshot.docs) {
+        const channel = { id: channelDoc.id, ...channelDoc.data() } as {id: string, type?: string, teamId?: string, regionId?: string};
+        let memberCount = 0;
+
+        if (channel.type === "team" && channel.teamId) {
+          // Count users with this specific teamId
+          memberCount = users.filter(user => user.teamId === channel.teamId).length;
+        } else if (channel.type === "region" && channel.regionId) {
+          // Count users whose team belongs to this region
+          const regionTeamIds = teams
+            .filter(team => team.regionId === channel.regionId)
+            .map(team => team.id);
+          memberCount = users.filter(user => 
+            user.teamId && regionTeamIds.includes(user.teamId)
+          ).length;
+        }
+
+        // Update the member count
+        const channelRef = doc(db, "chatChannels", channel.id);
+        batch.update(channelRef, { memberCount });
+      }
+
+      await batch.commit();
+      console.log("Updated member counts for all chat channels");
+    } catch (error) {
+      console.error("Error updating channel member counts:", error);
+    }
   }
 
   // Update member count for a channel

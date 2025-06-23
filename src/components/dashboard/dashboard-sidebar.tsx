@@ -98,13 +98,13 @@ function DashboardSidebarContent() {
   return (
     <>
       <Sidebar>
-        <SidebarHeader>
-          <div className="flex items-center justify-center p-4 group-data-[collapsible=icon]:p-2 premium:hidden">
+        <SidebarHeader className="premium:hidden">
+          <div className="flex items-center justify-center p-4 group-data-[collapsible=icon]:p-2">
             {/* Light mode logo */}
             <img 
               src="https://imgur.com/BQs5krw.png" 
               alt="LeadFlow Logo" 
-              className="h-16 w-auto max-w-full object-contain dark:hidden group-data-[collapsible=icon]:h-8"
+              className="h-16 w-auto max-w-full object-contain dark:hidden premium:hidden group-data-[collapsible=icon]:h-8"
             />
             {/* Dark mode - Bold text logo */}
             <div className="hidden dark:block group-data-[collapsible=icon]:hidden">

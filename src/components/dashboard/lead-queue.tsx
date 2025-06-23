@@ -462,7 +462,7 @@ export default function LeadQueue() {
 
 
   return (
-    <Card className="h-full flex flex-col bg-transparent shadow-lg hover:shadow-xl transition-all duration-200 border-0 ring-1 ring-white/5 dark:ring-slate-800/20 dark:card-glass dark:glow-turquoise premium:card-glass premium:glow-premium">
+    <Card className="h-full flex flex-col bg-white/95 dark:bg-transparent premium:bg-transparent shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-0 premium:border-0 ring-1 ring-white/5 dark:ring-slate-800/20 dark:card-glass dark:glow-turquoise premium:card-glass premium:glow-premium">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 px-6 pt-6 bg-transparent">
         <CardTitle className="text-xl sm:text-2xl font-bold font-headline flex items-center text-slate-900 dark:text-slate-100 premium:text-glow">
           <div className="p-2 bg-transparent rounded-lg mr-3 dark:glow-turquoise premium:glow-premium premium:icon-hover-glow transition-all duration-300">

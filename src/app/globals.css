@@ -184,7 +184,7 @@
       radial-gradient(circle at 70% 20%, rgba(40, 40, 60, 0.3), transparent 80%),
       radial-gradient(circle at 30% 80%, rgba(40, 40, 60, 0.3), transparent 80%),
       /* Fire highlights: purple and teal gradients */
-      radial-gradient(circle at 50% 90%, rgba(187, 134, 252, 0.65), transparent 50%),
+      radial-gradient(circle at 50% 90%, rgba(187, 134, 252, 0.2), transparent 50%),
       radial-gradient(circle at 60% 85%, rgba(3, 218, 198, 0.75), transparent 75%);
     
     background-size: 500% 500%, 550% 550%, 350% 350%, 350% 350%;
@@ -387,7 +387,7 @@
     background-image:
       radial-gradient(circle at 70% 20%, rgba(40, 40, 60, 0.3), transparent 80%),
       radial-gradient(circle at 30% 80%, rgba(40, 40, 60, 0.3), transparent 80%),
-      radial-gradient(circle at 50% 90%, rgba(187, 134, 252, 0.65), transparent 50%),
+      radial-gradient(circle at 50% 90%, rgba(187, 134, 252, 0.2), transparent 50%),
       radial-gradient(circle at 60% 85%, rgba(3, 218, 198, 0.75), transparent 75%) !important;
     
     background-size: 500% 500%, 550% 550%, 350% 350%, 350% 350% !important;
@@ -680,8 +680,8 @@
 
   /* Transparent tab triggers with subtle active states */
   .premium .bg-transparent[data-state="active"] {
-    background: rgba(187, 134, 252, 0.1) !important;
-    border: 1px solid rgba(187, 134, 252, 0.3) !important;
+    background: rgba(187, 134, 252, 0.05) !important;
+    border: 1px solid rgba(187, 134, 252, 0.2) !important;
   }
 
   .dark .bg-transparent[data-state="active"] {

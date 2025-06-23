@@ -237,6 +237,9 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
     
     const initializeChannels = async () => {
       try {
+        // Update member counts when chat opens
+        await ChatService.updateAllChannelMemberCounts();
+        
         const unsubscribe = await ChatService.listenToUserChannels(
           user.uid,
           user.teamId,
@@ -467,11 +470,11 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[80vh] p-0">
-        <div className="flex h-full">
+      <DialogContent className="max-w-6xl h-[85vh] p-0 flex flex-col">
+        <div className="flex h-full min-h-0">
           {/* Sidebar - Channel List */}
           <div className="w-80 border-r bg-muted/30 flex flex-col">
-            <DialogHeader className="p-4 border-b">
+            <DialogHeader className="p-4 border-b shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5" />
                 Group Conversations
@@ -481,7 +484,7 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
               </p>
             </DialogHeader>
             
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-3 space-y-3">
                 {channels.length === 0 && (
                   <div className="text-center py-4">
@@ -549,11 +552,11 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
           </div>
 
           {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-h-0">
             {activeChannel ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b bg-background">
+                <div className="p-4 border-b bg-background shrink-0">
                   <div className="flex items-center gap-3">
                     {getChannelIcon(activeChannel)}
                     <div>
@@ -569,7 +572,7 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
                 </div>
 
                 {/* Messages Area */}
-                <ScrollArea className="flex-1 p-4">
+                <ScrollArea className="flex-1 min-h-0 p-4">
                   <div className="space-y-3 max-w-none">
                     {messages.length === 0 && (
                       <div className="text-center py-8">
@@ -620,7 +623,7 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
                 </ScrollArea>
 
                 {/* Message Input */}
-                <div className="p-4 border-t bg-background relative">
+                <div className="p-3 border-t bg-background relative">
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -667,7 +670,7 @@ export default function TeamChat({ isOpen, onClose }: TeamChatProps) {
                   {showEmojiPicker && (
                     <div 
                       ref={emojiPickerRef}
-                      className="absolute bottom-16 left-4 bg-background border border-border rounded-lg p-3 shadow-lg z-50 w-80"
+                      className="absolute bottom-14 left-3 bg-background border border-border rounded-lg p-3 shadow-lg z-50 w-80"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium">Emojis</span>

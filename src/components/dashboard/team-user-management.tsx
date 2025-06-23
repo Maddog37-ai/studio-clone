@@ -331,8 +331,8 @@ export default function TeamUserManagement() {
                             size="sm" 
                             className={
                               teamMember.teamId === "empire" 
-                                ? "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/40 dark:text-indigo-400" 
-                                : "bg-slate-100 dark:bg-slate-800"
+                                ? "bg-indigo-100/80 hover:bg-indigo-200/80 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/40 dark:text-indigo-400 premium:bg-transparent premium:border-premium-purple/30 premium:text-white premium:hover:bg-premium-glass/30" 
+                                : "bg-slate-100/80 dark:bg-slate-800/80 premium:bg-transparent premium:border-white/20 premium:text-white premium:hover:bg-white/10"
                             }
                           >
                             <Building2 className="mr-1.5 h-4 w-4" />
@@ -340,13 +340,13 @@ export default function TeamUserManagement() {
                             <ChevronDown className="ml-1.5 h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="!bg-white/95 !backdrop-blur-md !border-border/20 dark:!bg-slate-950/95 dark:!border-slate-700/50 premium:!bg-slate-900/90 premium:!backdrop-blur-md premium:!border-premium-purple/20 premium:!shadow-lg">
                           {teams.filter(team => team.isActive).map((team) => (
                             <DropdownMenuItem
                               key={team.id}
                               onClick={() => handleChangeUserTeam(teamMember, team.id)}
                               disabled={teamMember.teamId === team.id}
-                              className={team.id === "empire" ? "text-indigo-700 dark:text-indigo-400 font-medium" : ""}
+                              className={`!bg-transparent hover:!bg-slate-100/50 dark:hover:!bg-slate-800/50 premium:hover:!bg-white/10 premium:!text-white ${team.id === "empire" ? "text-indigo-700 dark:text-indigo-400 font-medium" : ""}`}
                             >
                               <Building2 className={`mr-2 h-4 w-4 ${team.id === "empire" ? "text-indigo-600 dark:text-indigo-400" : ""}`} />
                               {team.name}
