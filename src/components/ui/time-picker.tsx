@@ -78,7 +78,7 @@ export function TimePicker({
           <SelectValue placeholder={placeholder} />
         </div>
       </SelectTrigger>
-      <SelectContent className="max-h-[200px]">
+      <SelectContent className="max-h-[200px]" position="popper" sideOffset={4}>
         {timeSlots.map((slot) => (
           <SelectItem 
             key={slot.value} 

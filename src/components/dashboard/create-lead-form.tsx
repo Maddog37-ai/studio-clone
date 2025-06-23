@@ -382,7 +382,7 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto isolate">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto isolate fixed">
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl">Create New Lead</DialogTitle>
           <DialogDescription className="text-sm sm:text-base">
@@ -391,7 +391,7 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 relative">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 relative isolate">
             {/* Customer Name */}
             <FormField
               control={form.control}
@@ -576,7 +576,7 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
 
             {/* Scheduled Appointment Fields - Simple Implementation */}
             {dispatchType === "scheduled" && (
-              <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+              <div className="space-y-4 p-4 bg-muted/50 rounded-lg isolate">
                 <h4 className="font-medium text-sm sm:text-base">Schedule Appointment</h4>
                 <div className="text-sm text-muted-foreground">
                   Select a date and time for the scheduled appointment:
@@ -590,12 +590,14 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
                     <FormItem>
                       <FormLabel className="text-sm sm:text-base">Date</FormLabel>
                       <FormControl>
-                        <DatePicker
-                          date={field.value}
-                          onDateChange={field.onChange}
-                          placeholder="Select appointment date"
-                          className="text-sm sm:text-base"
-                        />
+                        <div className="isolate">
+                          <DatePicker
+                            date={field.value}
+                            onDateChange={field.onChange}
+                            placeholder="Select appointment date"
+                            className="text-sm sm:text-base"
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -610,13 +612,15 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
                     <FormItem>
                       <FormLabel className="text-sm sm:text-base">Time</FormLabel>
                       <FormControl>
-                        <TimePicker
-                          time={field.value}
-                          onTimeChange={field.onChange}
-                          placeholder="Select appointment time"
-                          className="text-sm sm:text-base"
-                          timeSlots={timeSlots}
-                        />
+                        <div className="isolate">
+                          <TimePicker
+                            time={field.value}
+                            onTimeChange={field.onChange}
+                            placeholder="Select appointment time"
+                            className="text-sm sm:text-base"
+                            timeSlots={timeSlots}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
