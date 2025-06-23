@@ -8,20 +8,19 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { db, storage } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useState, useCallback, useRef, useEffect, ChangeEvent } from "react";
-import { Loader2, CalendarIcon, MapPin, Upload, X, FileImage } from "lucide-react";
+import { Loader2, MapPin, Upload, X, FileImage } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { DispatchType, LeadStatus } from "@/types";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 import { LeadNotifications } from "@/lib/notification-service";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { createPortal } from "react-dom";
 
 interface PlacePrediction {
   description: string;
@@ -129,6 +128,8 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const [isClient, setIsClient] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -150,6 +151,25 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
       form.setValue("appointmentTime", "17:00");
     }
   }, [dispatchType, form]);
+
+  // Set client-side flag to enable portal rendering
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Close address predictions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (addressInputRef.current && !addressInputRef.current.contains(event.target as Node)) {
+        setShowPredictions(false);
+      }
+    };
+
+    if (showPredictions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showPredictions]);
 
   // Address autocomplete functionality
   const fetchAddressPredictions = useCallback(async (input: string) => {
@@ -362,16 +382,16 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto dark:card-glass dark:glow-turquoise dark:border-turquoise/20">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto isolate">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl dark:text-turquoise">Create New Lead</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Create New Lead</DialogTitle>
           <DialogDescription className="text-sm sm:text-base">
             Fill out the form below to create a new lead.
           </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 relative">
             {/* Customer Name */}
             <FormField
               control={form.control}
@@ -422,6 +442,7 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
+                          ref={addressInputRef}
                           placeholder="Enter address"
                           className="pl-10 text-sm sm:text-base"
                           {...field}
@@ -444,26 +465,44 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
                         )}
                       </div>
                       
-                      {/* Address Predictions Dropdown */}
-                      {showPredictions && addressPredictions.length > 0 && (
-                        <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                          {addressPredictions.map((prediction) => (
-                            <div
-                              key={prediction.place_id}
-                              className="px-3 py-2 cursor-pointer hover:bg-muted text-sm"
-                              onClick={() => {
-                                field.onChange(prediction.description);
-                                setShowPredictions(false);
-                                setAddressPredictions([]);
+                      {/* Address Predictions Dropdown - Using Portal to prevent layout shifts */}
+                      {showPredictions && addressPredictions.length > 0 && isClient && (
+                        <>
+                          {createPortal(
+                            <div 
+                              className="fixed z-[9999] bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto min-w-[300px]"
+                              style={{
+                                top: addressInputRef.current 
+                                  ? addressInputRef.current.getBoundingClientRect().bottom + window.scrollY + 4
+                                  : 0,
+                                left: addressInputRef.current 
+                                  ? addressInputRef.current.getBoundingClientRect().left + window.scrollX
+                                  : 0,
+                                width: addressInputRef.current 
+                                  ? addressInputRef.current.getBoundingClientRect().width
+                                  : 300
                               }}
                             >
-                              <div className="flex items-center space-x-2">
-                                <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                <span className="truncate">{prediction.description}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                              {addressPredictions.map((prediction) => (
+                                <div
+                                  key={prediction.place_id}
+                                  className="px-3 py-2 cursor-pointer hover:bg-muted text-sm"
+                                  onClick={() => {
+                                    field.onChange(prediction.description);
+                                    setShowPredictions(false);
+                                    setAddressPredictions([]);
+                                  }}
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                    <span className="truncate">{prediction.description}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>,
+                            document.body
+                          )}
+                        </>
                       )}
                     </div>
                   </FormControl>
@@ -535,7 +574,7 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
               />
             )}
 
-            {/* Scheduled Appointment Fields - Matching Reschedule Calendar Specifications */}
+            {/* Scheduled Appointment Fields - Simple Implementation */}
             {dispatchType === "scheduled" && (
               <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                 <h4 className="font-medium text-sm sm:text-base">Schedule Appointment</h4>
@@ -543,64 +582,42 @@ export default function CreateLeadForm({ isOpen, onClose }: CreateLeadFormProps)
                   Select a date and time for the scheduled appointment:
                 </div>
                 
-                {/* Date Picker - Same as reschedule calendar */}
+                {/* Date Picker */}
                 <FormField
                   control={form.control}
                   name="appointmentDate"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel className="text-sm sm:text-base">Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal text-sm sm:text-base",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <DatePicker
+                          date={field.value}
+                          onDateChange={field.onChange}
+                          placeholder="Select appointment date"
+                          className="text-sm sm:text-base"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* Time Selector - Same as reschedule calendar with 30-minute intervals */}
+                {/* Time Picker */}
                 <FormField
                   control={form.control}
                   name="appointmentTime"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm sm:text-base">Time</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="text-sm sm:text-base">
-                            <SelectValue placeholder="Select time" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="max-h-[200px]">
-                          {timeSlots.map((slot) => (
-                            <SelectItem key={slot.value} value={slot.value}>
-                              {slot.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <TimePicker
+                          time={field.value}
+                          onTimeChange={field.onChange}
+                          placeholder="Select appointment time"
+                          className="text-sm sm:text-base"
+                          timeSlots={timeSlots}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

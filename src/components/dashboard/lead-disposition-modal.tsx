@@ -19,12 +19,11 @@ import {useAuth} from "@/hooks/use-auth";
 import {db} from "@/lib/firebase";
 import {doc, updateDoc, serverTimestamp, Timestamp, collection, query, where, onSnapshot} from "firebase/firestore";
 import {useState, useEffect} from "react";
-import {CalendarIcon, Loader2} from "lucide-react";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Calendar} from "@/components/ui/calendar";
+import {Loader2} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {format} from "date-fns";
-import {cn} from "@/lib/utils";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { cn } from "@/lib/utils";
 
 interface LeadDispositionModalProps {
   lead: Lead;
@@ -45,10 +44,22 @@ const dispositionOptions: LeadStatus[] = [
 const timeSlots = (() => {
   const slots = [];
   for (let hour = 8; hour <= 22; hour++) {
-    const hourStr = hour.toString().padStart(2, "0");
-    slots.push(`${hourStr}:00`);
-    if (hour < 22) { // Don't add 30-minute slot for 10pm (last slot is 10:00pm)
-      slots.push(`${hourStr}:30`);
+    // Add :00 slot
+    const hour12 = hour > 12 ? hour - 12 : hour;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour12 === 0 ? 12 : hour12;
+    
+    slots.push({
+      value: `${hour.toString().padStart(2, '0')}:00`,
+      label: `${displayHour}:00 ${ampm}`
+    });
+    
+    // Add :30 slot (except for 10:30 PM to keep it until 10 PM)
+    if (hour < 22) {
+      slots.push({
+        value: `${hour.toString().padStart(2, '0')}:30`,
+        label: `${displayHour}:30 ${ampm}`
+      });
     }
   }
   return slots;
@@ -346,58 +357,19 @@ export default function LeadDispositionModal({lead, isOpen, onClose}: LeadDispos
           {selectedStatus === "rescheduled" && (
             <div className="space-y-3 rounded-md border border-border p-3">
               <Label className="text-sm font-medium">Set Appointment Time</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !appointmentDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {appointmentDate ? format(appointmentDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={appointmentDate}
-                    onSelect={(date) => {
-                      console.log('Date selected:', date);
-                      setAppointmentDate(date);
-                    }}
-                    initialFocus
-                    disabled={(date) => {
-                      // Simpler date validation - disable yesterday and earlier
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      return date < today;
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
+              <DatePicker
+                date={appointmentDate}
+                onDateChange={setAppointmentDate}
+                placeholder="Pick a date"
+                className="w-full"
+              />
               <div className="w-full">
-                <Select onValueChange={setAppointmentTime} value={appointmentTime}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {timeSlots.map((time) => {
-                      const [hour, minute] = time.split(':');
-                      const hour12 = parseInt(hour) > 12 ? parseInt(hour) - 12 : parseInt(hour);
-                      const ampm = parseInt(hour) >= 12 ? 'PM' : 'AM';
-                      const displayHour = hour12 === 0 ? 12 : hour12;
-                      const displayTime = `${displayHour}:${minute} ${ampm}`;
-                      
-                      return (
-                        <SelectItem key={time} value={time}>
-                          {displayTime}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                <TimePicker
+                  time={appointmentTime}
+                  onTimeChange={setAppointmentTime}
+                  placeholder="Select time"
+                  timeSlots={timeSlots}
+                />
               </div>
             </div>
           )}
