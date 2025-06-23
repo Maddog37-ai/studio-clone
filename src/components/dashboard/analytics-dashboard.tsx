@@ -1030,6 +1030,29 @@ export default function AnalyticsDashboard() {
                 </TabsContent>
 
                 <TabsContent value="setters" className="space-y-6">
+                  {/* Filters Section */}
+                  <div className="flex flex-wrap gap-4 items-center bg-white border border-gray-200 shadow-sm p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-700">Filters:</span>
+                    </div>
+                    <Select value={dateRange} onValueChange={setDateRange}>
+                      <SelectTrigger className="w-40 bg-white border-gray-200 shadow-sm hover:border-gray-300 focus:border-blue-500">
+                        <SelectValue placeholder="Date Range" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-gray-200 shadow-lg">
+                        <SelectItem value="7d">Last 7 days</SelectItem>
+                        <SelectItem value="30d">Last 30 days</SelectItem>
+                        <SelectItem value="90d">Last 90 days</SelectItem>
+                        <SelectItem value="365d">Last year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={exportAnalyticsReport} variant="outline" className="flex items-center gap-2 bg-white border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300">
+                      <Download className="h-4 w-4" />
+                      Export Report
+                    </Button>
+                  </div>
+                  
                   <SetterQualityEnhanced 
                     leads={analytics.leads}
                     dateRange={dateRange}
@@ -1038,6 +1061,42 @@ export default function AnalyticsDashboard() {
                 </TabsContent>
 
                 <TabsContent value="closers" className="space-y-6">
+                  {/* Filters Section */}
+                  <div className="flex flex-wrap gap-4 items-center bg-white border border-gray-200 shadow-sm p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-700">Filters:</span>
+                    </div>
+                    <Select value={dateRange} onValueChange={setDateRange}>
+                      <SelectTrigger className="w-40 bg-white border-gray-200 shadow-sm hover:border-gray-300 focus:border-blue-500">
+                        <SelectValue placeholder="Date Range" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-gray-200 shadow-lg">
+                        <SelectItem value="7d">Last 7 days</SelectItem>
+                        <SelectItem value="30d">Last 30 days</SelectItem>
+                        <SelectItem value="90d">Last 90 days</SelectItem>
+                        <SelectItem value="365d">Last year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterCloser} onValueChange={setFilterCloser}>
+                      <SelectTrigger className="w-48 bg-white border-gray-200 shadow-sm hover:border-gray-300 focus:border-blue-500">
+                        <SelectValue placeholder="All Closers" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-gray-200 shadow-lg">
+                        <SelectItem value="all">All Closers</SelectItem>
+                        {analytics.closers.map(closer => (
+                          <SelectItem key={closer.uid} value={closer.uid}>
+                            {closer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={exportAnalyticsReport} variant="outline" className="flex items-center gap-2 bg-white border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300">
+                      <Download className="h-4 w-4" />
+                      Export Report
+                    </Button>
+                  </div>
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Closer Performance Chart */}
                     <Card>
@@ -1403,20 +1462,86 @@ export default function AnalyticsDashboard() {
             </TabsContent>
 
             <TabsContent value="setters" className="space-y-6">
-              <SetterQualityEnhanced 
-                leads={analytics.leads}
-                dateRange={dateRange}
-                className="w-full"
-              />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Setter Overview Card - Left Side */}
+                <Card className="lg:col-span-1">
+                  <CardHeader>
+                    <CardTitle>Setter Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="text-center p-4 bg-muted rounded-lg">
+                        <p className="text-2xl font-bold">{setterAnalytics.length}</p>
+                        <p className="text-sm text-muted-foreground">Active Setters</p>
+                      </div>
+                      <div className="text-center p-4 bg-muted rounded-lg">
+                        <p className="text-2xl font-bold">
+                          {setterAnalytics.reduce((sum, s) => sum + s.totalLeads, 0)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Total Leads Set</p>
+                      </div>
+                      <div className="text-center p-4 bg-muted rounded-lg">
+                        <p className="text-2xl font-bold">
+                          {setterAnalytics.length > 0 
+                            ? (setterAnalytics.reduce((sum, s) => sum + s.conversionRate, 0) / setterAnalytics.length).toFixed(1)
+                            : 0}%
+                        </p>
+                        <p className="text-sm text-muted-foreground">Avg Conversion Rate</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Setter Quality Component - Right Side */}
+                <div className="lg:col-span-2">
+                  <SetterQualityEnhanced 
+                    leads={analytics.leads}
+                    dateRange={dateRange}
+                    className="w-full"
+                  />
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="closers" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Closer Performance Chart */}
-                <Card>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Closer Overview Card - Left Side */}
+                <Card className="lg:col-span-1">
                   <CardHeader>
-                    <CardTitle>Closer Performance Overview</CardTitle>
+                    <CardTitle>Closer Overview</CardTitle>
                   </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="text-center p-4 bg-muted rounded-lg">
+                        <p className="text-2xl font-bold">{closerAnalytics.length}</p>
+                        <p className="text-sm text-muted-foreground">Active Closers</p>
+                      </div>
+                      <div className="text-center p-4 bg-muted rounded-lg">
+                        <p className="text-2xl font-bold">
+                          {closerAnalytics.reduce((sum, c) => sum + c.totalAssigned, 0)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Total Assigned</p>
+                      </div>
+                      <div className="text-center p-4 bg-muted rounded-lg">
+                        <p className="text-2xl font-bold">
+                          {closerAnalytics.length > 0 
+                            ? (closerAnalytics.reduce((sum, c) => sum + c.closingRatio, 0) / closerAnalytics.length).toFixed(1)
+                            : 0}%
+                        </p>
+                        <p className="text-sm text-muted-foreground">Avg Closing Rate</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Closer Performance Charts - Right Side */}
+                <div className="lg:col-span-2">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Closer Performance Chart */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Closer Performance Overview</CardTitle>
+                      </CardHeader>
                   <CardContent className="p-4">
                     <ChartContainer config={chartConfig} className="h-[400px] w-full">
                       <BarChart data={closerPerformanceData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>

@@ -107,7 +107,7 @@ export default function CloserCard({
         <div className="flex items-start space-x-2">
           {/* Position indicator */}
           {position && (
-            <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-white text-xs font-bold rounded-full shadow-lg bg-blue-500">
+            <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-slate-600 text-xs font-bold rounded-full border border-slate-300">
               {position}
             </div>
           )}

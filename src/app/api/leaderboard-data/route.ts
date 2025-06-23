@@ -8,12 +8,38 @@ export async function GET(request: NextRequest) {
   if (!res.ok) return NextResponse.json({ error: 'Failed to fetch CSV' }, { status: 500 });
 
   const csv = await res.text();
+  
+  // Better CSV parsing that handles quoted fields with commas
+  function parseCSVLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    result.push(current.trim());
+    return result;
+  }
+  
   const lines = csv.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.trim());
+  const headers = parseCSVLine(lines[0]).map(h => h.replace(/"/g, '').trim());
   const data = lines.slice(1).map(line => {
-    const values = line.split(',');
+    const values = parseCSVLine(line);
     const entry: any = {};
-    headers.forEach((header, i) => { entry[header] = values[i]; });
+    headers.forEach((header, i) => { 
+      entry[header] = values[i] ? values[i].replace(/"/g, '').trim() : '';
+    });
     return entry;
   });
 

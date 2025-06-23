@@ -15,13 +15,13 @@ export const metadata: Metadata = {
   description: "Solar Sales Lead History",
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.svg', sizes: '32x32', type: 'image/svg+xml' },
+      { url: 'https://imgur.com/oujPvCe', type: 'image/png' },
+      { url: 'https://imgur.com/oujPvCe', sizes: '32x32', type: 'image/png' },
     ],
     apple: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: 'https://imgur.com/oujPvCe', type: 'image/png' },
     ],
-    shortcut: '/favicon.svg',
+    shortcut: 'https://imgur.com/oujPvCe',
   },
 };
 
@@ -38,7 +38,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         
         {/* MS Tile Icons */}
-        <meta name="msapplication-TileImage" content="/icon.svg" />
+        <meta name="msapplication-TileImage" content="https://imgur.com/oujPvCe" />
         <meta name="msapplication-TileColor" content="#3B82F6" />
       </head>
       <body className={`${inter.className} font-body antialiased`}>

@@ -140,8 +140,8 @@ export default function TeamSelector() {
       <div className="space-y-2">
         {loadingTeams ? (
           <div className="flex items-center justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin mr-2 dark:text-turquoise" />
-            <span className="text-sm text-muted-foreground dark:text-gray-400">Loading teams...</span>
+            <Loader2 className="h-5 w-5 animate-spin mr-2 dark:text-turquoise premium:text-white" />
+            <span className="text-sm text-muted-foreground dark:text-gray-400 premium:text-gray-300">Loading teams...</span>
           </div>
         ) : (
           <Select
@@ -149,30 +149,30 @@ export default function TeamSelector() {
             onValueChange={handleTeamSwitch}
             disabled={switchingTeam}
           >
-            <SelectTrigger className="w-full dark:card-glass dark:border-turquoise/20 dark:glow-turquoise">
+            <SelectTrigger className="w-full dark:card-glass dark:border-turquoise/20 dark:glow-turquoise premium:card-glass premium:border-white/18 premium:text-glow">
               <SelectValue>
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-primary dark:text-turquoise" />
-                  <span className="font-medium dark:text-gray-200">{currentTeam?.name || "Unknown Team"}</span>
+                  <Building2 className="h-4 w-4 text-primary dark:text-turquoise premium:text-white" />
+                  <span className="font-medium dark:text-gray-200 premium:text-white">{currentTeam?.name || "Unknown Team"}</span>
                   {currentTeam?.description && (
-                    <span className="text-xs text-muted-foreground dark:text-gray-400">
+                    <span className="text-xs text-muted-foreground dark:text-gray-400 premium:text-gray-300">
                       - {currentTeam.description}
                     </span>
                   )}
                 </div>
               </SelectValue>
             </SelectTrigger>
-            <SelectContent className="dark:card-glass dark:border-turquoise/20 dark:glow-turquoise">
+            <SelectContent className="dark:card-glass dark:border-turquoise/20 dark:glow-turquoise premium:card-glass premium:border-white/18">
               {teams
                 .filter(team => team.isActive)
                 .map((team) => (
-                <SelectItem key={team.id} value={team.id} className="dark:hover:bg-turquoise/10 dark:focus:bg-turquoise/10">
+                <SelectItem key={team.id} value={team.id} className="dark:hover:bg-turquoise/10 dark:focus:bg-turquoise/10 premium:hover:bg-white/10 premium:focus:bg-white/10 premium:text-white">
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 dark:text-cyan" />
+                    <Building2 className="h-4 w-4 dark:text-cyan premium:text-gray-300" />
                     <div>
-                      <div className="font-medium dark:text-gray-200">{team.name}</div>
+                      <div className="font-medium dark:text-gray-200 premium:text-white">{team.name}</div>
                       {team.description && (
-                        <div className="text-xs text-muted-foreground dark:text-gray-400">
+                        <div className="text-xs text-muted-foreground dark:text-gray-400 premium:text-gray-300">
                           {team.description}
                         </div>
                       )}
@@ -185,20 +185,20 @@ export default function TeamSelector() {
         )}
         
         {switchingTeam && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
+          <div className="flex items-center gap-2 text-sm text-muted-foreground premium:text-gray-300">
+            <Loader2 className="h-4 w-4 animate-spin premium:text-white" />
             Switching teams...
           </div>
         )}
         
-        <div className="text-xs text-muted-foreground p-2 bg-muted/50 rounded border">
+        <div className="text-xs text-muted-foreground p-2 bg-muted/50 rounded border premium:bg-white/10 premium:border-white/20 premium:text-gray-300">
           <div className="flex items-center justify-between">
             <span>
-              <strong>Role:</strong> 
+              <strong className="premium:text-white">Role:</strong> 
               <span className="inline-flex items-center gap-1 ml-1">
-                {(user.role === "manager" || user.role === "admin") && <Shield className="h-3 w-3 text-blue-600" />}
-                {user.role === "closer" && <Users className="h-3 w-3 text-green-600" />}
-                <span className="capitalize font-medium">{user.role}</span>
+                {(user.role === "manager" || user.role === "admin") && <Shield className="h-3 w-3 text-blue-600 premium:text-blue-400" />}
+                {user.role === "closer" && <Users className="h-3 w-3 text-green-600 premium:text-green-400" />}
+                <span className="capitalize font-medium premium:text-white">{user.role}</span>
               </span>
             </span>
           </div>

@@ -97,28 +97,37 @@ function DashboardSidebarContent() {
 
   return (
     <>
-      <Sidebar className="">
-        <SidebarHeader className="border-b border-border/20">
-          <div className="flex items-center space-x-3 p-4">
-            <div className="p-2 bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 premium:from-premium-purple/20 premium:to-premium-teal/10 rounded-xl shadow-sm premium:icon-hover-glow">
-              <GearIcon className="h-12 w-12 text-[#3574F2] dark:text-turquoise premium:text-premium-purple premium:icon-glow-purple premium:icon-pulse transition-all duration-300" />
-            </div>
-            <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-              <span className="text-lg font-bold font-headline bg-gradient-to-r from-[#3574F2] to-[#5096F2] dark:from-turquoise dark:to-cyan premium:from-premium-purple premium:to-premium-teal bg-clip-text text-transparent premium:text-glow">
+      <Sidebar>
+        <SidebarHeader>
+          <div className="flex items-center justify-center p-4 group-data-[collapsible=icon]:p-2 premium:hidden">
+            {/* Light mode logo */}
+            <img 
+              src="https://imgur.com/BQs5krw.png" 
+              alt="LeadFlow Logo" 
+              className="h-16 w-auto max-w-full object-contain dark:hidden group-data-[collapsible=icon]:h-8"
+            />
+            {/* Dark mode - Bold text logo */}
+            <div className="hidden dark:block group-data-[collapsible=icon]:hidden">
+              <h1 className="text-xl font-bold text-center">
                 LeadFlow
-              </span>
-              <span className="text-xs text-muted-foreground premium:text-muted-foreground">Lead History</span>
+              </h1>
+            </div>
+            {/* Collapsed logo for dark mode */}
+            <div className="hidden dark:group-data-[collapsible=icon]:block">
+              <h1 className="text-lg font-bold text-center">
+                LF
+              </h1>
             </div>
           </div>
         </SidebarHeader>
 
-        <SidebarContent className="flex-1">
-          <SidebarMenu className="p-2">
+        <SidebarContent>
+          <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href="/dashboard" className="flex items-center space-x-3 group">
-                  <Home className="h-5 w-5 transition-colors duration-300" />
-                  <span>Dashboard</span>
+              <SidebarMenuButton asChild className="shadow-sm">
+                <Link href="/dashboard">
+                  <Home className="h-5 w-5" />
+                  <span className="font-semibold">Dashboard</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -128,25 +137,25 @@ function DashboardSidebarContent() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => setIsCreateLeadModalOpen(true)}
-                  className="bg-gradient-to-r from-[#3574F2] to-[#5096F2] hover:from-[#3574F2]/90 hover:to-[#5096F2]/90 text-white shadow-lg shadow-[#3574F2]/25 hover:shadow-xl hover:shadow-[#3574F2]/30 transition-all duration-300 border-0 group"
+                  className="shadow-sm"
                 >
-                  <PlusCircle className="h-5 w-5 transition-all duration-300" />
-                  <span>Create New Lead</span>
+                  <PlusCircle className="h-5 w-5" />
+                  <span className="font-semibold">Create New Lead</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
 
             {/* Leaderboard */}
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href="/dashboard/leaderboard" className="flex items-center space-x-3 group">
-                  <Trophy className="h-5 w-5 text-yellow-500 transition-colors duration-300" />
-                  <span>Leaderboard</span>
+              <SidebarMenuButton asChild className="shadow-sm">
+                <Link href="/dashboard/leaderboard">
+                  <Trophy className="h-5 w-5 text-yellow-500" />
+                  <span className="font-semibold">Leaderboard</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            <Separator className="my-2" />
+            <Separator className="my-3" />
 
             {/* Manager/Admin Tools */}
             {isManagerOrAdmin && (
@@ -155,19 +164,19 @@ function DashboardSidebarContent() {
                 {isManager && !isAdmin && (
                   <>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link href="/dashboard/lead-history" className="flex items-center space-x-3 group">
-                          <ClipboardList className="h-5 w-5 transition-colors duration-300" />
-                          <span>Lead History</span>
+                      <SidebarMenuButton asChild className="shadow-sm">
+                        <Link href="/dashboard/lead-history">
+                          <ClipboardList className="h-5 w-5" />
+                          <span className="font-semibold">Lead History</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link href="/dashboard/performance-analytics" className="flex items-center space-x-3 group">
-                          <Brain className="h-5 w-5 transition-colors duration-300" />
-                          <span>Analytics</span>
+                      <SidebarMenuButton asChild className="shadow-sm">
+                        <Link href="/dashboard/performance-analytics">
+                          <Brain className="h-5 w-5" />
+                          <span className="font-semibold">Analytics</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -179,37 +188,35 @@ function DashboardSidebarContent() {
                   <>
                     {/* Manager Tools Section for Admins */}
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <div className="flex items-center space-x-3 px-2 py-1">
-                          <Users className="h-4 w-4 text-blue-500 transition-colors duration-300" />
-                          <span className="text-sm font-medium text-blue-600">Manager Tools</span>
-                        </div>
-                      </SidebarMenuButton>
+                      <div className="flex items-center space-x-3 px-2 py-1 text-sm font-medium text-muted-foreground group-data-[collapsible=icon]:hidden shadow-sm rounded-md">
+                        <Users className="h-4 w-4" />
+                        <span>Manager Tools</span>
+                      </div>
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link href="/dashboard/lead-history" className="flex items-center space-x-3 ml-4 group">
-                          <ClipboardList className="h-4 w-4 transition-colors duration-300" />
-                          <span>Lead History</span>
+                      <SidebarMenuButton asChild className="ml-4 shadow-sm">
+                        <Link href="/dashboard/lead-history">
+                          <ClipboardList className="h-4 w-4" />
+                          <span className="font-semibold">Lead History</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link href="/dashboard/manage-teams" className="flex items-center space-x-3 ml-4 group">
-                          <Users className="h-4 w-4 transition-colors duration-300" />
-                          <span>Manage Teams</span>
+                      <SidebarMenuButton asChild className="ml-4 shadow-sm">
+                        <Link href="/dashboard/manage-teams">
+                          <Users className="h-4 w-4" />
+                          <span className="font-semibold">Manage Teams</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link href="/dashboard/performance-analytics" className="flex items-center space-x-3 ml-4 group">
-                          <Brain className="h-4 w-4 transition-colors duration-300" />
-                          <span>Analytics</span>
+                      <SidebarMenuButton asChild className="ml-4 shadow-sm">
+                        <Link href="/dashboard/performance-analytics">
+                          <Brain className="h-4 w-4" />
+                          <span className="font-semibold">Analytics</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -218,10 +225,10 @@ function DashboardSidebarContent() {
 
                     {/* Admin Tools */}
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link href="/dashboard/admin-tools" className="flex items-center space-x-3 group">
-                          <Settings className="h-5 w-5 transition-colors duration-300" />
-                          <span>Admin Tools</span>
+                      <SidebarMenuButton asChild className="shadow-sm">
+                        <Link href="/dashboard/admin-tools">
+                          <Settings className="h-5 w-5" />
+                          <span className="font-semibold">Admin Tools</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -243,37 +250,37 @@ function DashboardSidebarContent() {
           </SidebarMenu>
         </SidebarContent>
 
-        <SidebarFooter className="border-t border-border/20 p-4 min-h-[180px] flex-shrink-0">
-          <SidebarMenu className="space-y-3 h-full">
+        <SidebarFooter>
+          <SidebarMenu>
             {/* User Profile */}
-            <SidebarMenuItem className="flex-1">
-              <SidebarMenuButton asChild>
-                <Link href="/dashboard/profile" className="flex items-center space-x-4 p-4 min-h-[60px] transition-all duration-300">
-                  <Avatar className="h-12 w-12 border-2 border-border shadow-md flex-shrink-0 premium:border-premium-glow">
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild size="lg" className="shadow-sm">
+                <Link href="/dashboard/profile">
+                  <Avatar className="h-8 w-8">
                     <AvatarImage 
                       src={user?.avatarUrl || undefined} 
                       alt={user?.displayName || user?.email || 'User'} 
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-[#3574F2]/20 to-[#5096F2]/10 dark:from-turquoise/20 dark:to-cyan/10 premium:from-premium-purple/20 premium:to-premium-teal/10 text-[#3574F2] dark:text-turquoise premium:text-premium-purple font-semibold text-lg">
+                    <AvatarFallback>
                       {getAvatarFallbackText()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col text-sm group-data-[collapsible=icon]:hidden flex-1 min-w-0">
-                    <span className="font-bold text-foreground text-base truncate premium:text-foreground">
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
                       {user?.displayName || user?.email}
                     </span>
-                    <span className="text-muted-foreground capitalize font-medium truncate premium:text-muted-foreground">{user?.role}</span>
+                    <span className="truncate text-xs capitalize">{user?.role}</span>
                   </div>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            {/* Display Settings in Profile */}
+            {/* Theme Toggle */}
             <SidebarMenuItem>
-              <div className="flex items-center justify-between px-4 py-2 group-data-[collapsible=icon]:hidden">
-                <div className="flex items-center space-x-2">
-                  <Monitor className="h-4 w-4 text-muted-foreground transition-colors duration-300" />
-                  <span className="text-sm text-muted-foreground">Theme</span>
+              <div className="flex items-center justify-between px-2 py-1.5 group-data-[collapsible=icon]:justify-center">
+                <div className="flex items-center space-x-2 group-data-[collapsible=icon]:space-x-0">
+                  <Monitor className="h-4 w-4" />
+                  <span className="text-xs group-data-[collapsible=icon]:hidden">Theme</span>
                 </div>
                 <ThemeToggleButton />
               </div>
@@ -281,17 +288,14 @@ function DashboardSidebarContent() {
 
             {/* Logout Button */}
             <SidebarMenuItem>
-              <div className="flex justify-center px-2 py-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={logout}
-                  aria-label="Logout"
-                  className="h-10 w-10 hover:bg-red-50 hover:text-red-600 transition-colors duration-300 group"
-                >
-                  <LogOut className="h-5 w-5 transition-all duration-300" />
-                </Button>
-              </div>
+              <SidebarMenuButton
+                onClick={logout}
+                size="sm"
+                className="hover:bg-transparent"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
