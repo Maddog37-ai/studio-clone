@@ -193,19 +193,7 @@ export default function SetterQualityEnhanced({ leads, dateRange, className }: S
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Additional Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Leads Set</p>
-                <p className="text-2xl font-bold text-blue-600">{teamTotals.totalLeadsSet}</p>
-              </div>
-              <Target className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">

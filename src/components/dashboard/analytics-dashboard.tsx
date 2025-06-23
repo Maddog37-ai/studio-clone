@@ -617,7 +617,6 @@ export default function AnalyticsDashboard() {
         name: closer.name.split(" ")[0],
         sold: closer.totalSold,
         noSale: closer.totalNoSale,
-        failedCredits: closer.totalFailedCredits,
         closingRatio: closer.closingRatio,
       })), [closerAnalytics, filterCloser]);
 
@@ -727,54 +726,56 @@ export default function AnalyticsDashboard() {
               Export Report
             </Button>
           </div>
-          {/* Key Metrics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          {/* Main Overview Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Setter Overview */}
             <Card className="dark:card-glass dark:glow-turquoise dark:border-turquoise/20">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Target className="h-8 w-8 text-blue-600 dark:text-turquoise" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-muted-foreground">Total Leads</p>
-                    <p className="text-2xl font-bold">{filteredMetrics.totalLeads}</p>
-                  </div>
-                </div>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Setter Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SetterQualityEnhanced 
+                  leads={analytics.leads}
+                  dateRange={dateRange}
+                  className="w-full"
+                />
               </CardContent>
             </Card>
 
+            {/* Closer Overview */}
             <Card className="dark:card-glass dark:glow-cyan dark:border-cyan/20">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Target className="h-8 w-8 text-green-600 dark:text-cyan" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-muted-foreground">Sit Rate</p>
-                    <p className="text-2xl font-bold">{filteredMetrics.sitRate}%</p>
-                    <p className="text-xs text-muted-foreground">Sold, No Sale, Credit Fail</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="dark:card-glass dark:glow-turquoise dark:border-turquoise/20">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Users className="h-8 w-8 text-purple-600 dark:text-turquoise" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-muted-foreground">Avg Closing Rate</p>
-                    <p className="text-2xl font-bold">{avgClosingRatio}%</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="dark:card-glass dark:glow-cyan dark:border-cyan/20">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Activity className="h-8 w-8 text-orange-600 dark:text-cyan" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-muted-foreground">On Duty Closers</p>
-                    <p className="text-2xl font-bold">{analytics.teamStats?.onDutyClosers || 0}</p>
-                  </div>
-                </div>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Closer Performance Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <ChartContainer config={chartConfig} className="h-[400px] w-full">
+                  <BarChart data={closerPerformanceData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 11 }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold Leads" />
+                    <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale Leads" />
+                    <ChartLegend 
+                      content={<ChartLegendContent />} 
+                      wrapperStyle={{ paddingTop: '10px' }}
+                    />
+                  </BarChart>
+                </ChartContainer>
               </CardContent>
             </Card>
           </div>
@@ -919,45 +920,54 @@ export default function AnalyticsDashboard() {
         </TabsContent>
 
         <TabsContent value="setters" className="space-y-6">
+          <Card className="dark:card-glass dark:glow-turquoise dark:border-turquoise/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Detailed Setter Quality Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <SetterQualityEnhanced 
                 leads={analytics.leads}
                 dateRange={dateRange}
                 className="w-full"
               />
-            </TabsContent>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <TabsContent value="closers" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Closer Performance Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Closer Performance Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <ChartContainer config={chartConfig} className="h-[400px] w-full">
-                      <BarChart data={closerPerformanceData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="name" 
-                          tick={{ fontSize: 11 }}
-                          interval={0}
-                          angle={-45}
-                          textAnchor="end"
-                          height={60}
-                        />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold Leads" />
-                        <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale Leads" />
-                        <Bar dataKey="failedCredits" stackId="a" fill={chartConfig.credit_fail.color} name="Failed Credit Leads" />
-                        <ChartLegend 
-                          content={<ChartLegendContent />} 
-                          wrapperStyle={{ paddingTop: '10px' }}
-                        />
-                      </BarChart>
-                    </ChartContainer>
-                  </CardContent>
-                </Card>
+        <TabsContent value="closers" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Closer Performance Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Detailed Closer Performance</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <ChartContainer config={chartConfig} className="h-[400px] w-full">
+                  <BarChart data={closerPerformanceData} margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 11 }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="sold" stackId="a" fill={chartConfig.sold.color} name="Sold Leads" />
+                    <Bar dataKey="noSale" stackId="a" fill={chartConfig.no_sale.color} name="No Sale Leads" />
+                    <ChartLegend 
+                      content={<ChartLegendContent />} 
+                      wrapperStyle={{ paddingTop: '10px' }}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
                 {/* Closer Sales Pie Chart */}
                 <Card>
